@@ -1,0 +1,11 @@
+atomic-agents
+console
+dotenv
+eval-type-backport
+instructor
+matplotlib
+openai
+pandas
+pandera
+rich
+
