@@ -1,4 +1,5 @@
 atomic-agents
+<<<<<<< HEAD
 console
 dotenv
 eval-type-backport
@@ -9,3 +10,9 @@ pandas
 pandera
 rich
 
+=======
+openai
+instructor
+rich
+dotenv
+>>>>>>> c4c2954 (chore: problem with local files)

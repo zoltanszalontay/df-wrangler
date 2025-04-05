@@ -28,6 +28,7 @@ class DiscussionAgent:
         self.client = instructor.from_openai(
             OllamaClient(base_url="http://localhost:11434/v1", api_key="ollama"), mode=instructor.Mode.JSON
         )
+<<<<<<< HEAD
         self.model = "phi3:medium"
 
 
@@ -36,3 +37,13 @@ def get_response(self, prompt):
     response = self.agent.run(input_schema)
     self.response = Text(response.chat_message, style=f"bold {self.color}")
     return self.response
+=======
+        self.model = "phi3:mini"
+
+
+    def get_response(self, prompt):
+        input_schema = BaseAgentInputSchema(chat_message=prompt)
+        response = self.agent.run(input_schema)
+        self.response = Text(response.chat_message, style=f"bold {self.color}")
+        return self.response
+>>>>>>> c4c2954 (chore: problem with local files)

@@ -23,6 +23,7 @@ console.print(Panel(default_system_prompt_a, width=console.width, style="bold re
 default_system_prompt_b = agent_b.agent.system_prompt_generator.generate_prompt()
 console.print(Panel(default_system_prompt_b, width=console.width, style="bold cyan"), style="bold cyan")
 
+<<<<<<< HEAD
 
 # Start an infinite loop to handle user inputs and agent responses
 response_a = "Is it possible to make a time machine?"
@@ -31,6 +32,11 @@ for i in range(5):
         response_b = agent_b.get_response(response_a)
     else:
         response_b = agent_b.get_response(response_a._text[0])
+=======
+response_a = "Is it possible to make a time machine?"
+for i in range(5):
+    response_b = agent_b.get_response(response_a if i == 0 else response_a._text[0])
+>>>>>>> c4c2954 (chore: problem with local files)
     console.print(Text(f"{agent_b.name}:", style=f"bold {agent_b.color}"), end=" ")
     console.print(response_b)
 
