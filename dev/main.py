@@ -25,7 +25,7 @@ console.print(Panel(default_system_prompt_b, width=console.width, style="bold bl
 
 
 # Start an infinite loop to handle user inputs and agent responses
-prompt = "Tell the smallest prime number and and your partner to tell next one and also ask it to ask you to continue."
+prompt = "Hello! How can I assist you today?"
 response_a = None
 response_b = None
 
