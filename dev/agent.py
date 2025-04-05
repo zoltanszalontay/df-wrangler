@@ -35,3 +35,23 @@ class DiscussionAgent:
         response = self.agent.run(input_schema)
         self.response = Text(response.chat_message, style=f"bold {self.color}")
         return self.response
+
+
+if __name__ == "__main__":
+    agent = DiscussionAgent(name="Discussion Agent", color="blue")
+
+    # First prompt
+    prompt = "What is the capital of France?"
+    response = agent.get_response(prompt)
+
+    # Display the first response in a rich panel
+    panel = Panel(response, title=agent.name, border_style=agent.color)
+    agent.console.print(panel)
+
+    # Forward the first response back to the agent as a new prompt
+    follow_up_prompt = f"The agent said: '{response.plain}' Can you elaborate on that?"
+    follow_up_response = agent.get_response(follow_up_prompt)
+
+    # Display the follow-up response in a rich panel
+    follow_up_panel = Panel(follow_up_response, title=f"{agent.name} (Follow-Up)", border_style=agent.color)
+    agent.console.print(follow_up_panel)
