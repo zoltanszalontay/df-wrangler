@@ -30,9 +30,8 @@ class DiscussionAgent:
         )
         self.model = "phi3:medium"
 
-
-def get_response(self, prompt):
-    input_schema = BaseAgentInputSchema(chat_message=prompt)
-    response = self.agent.run(input_schema)
-    self.response = Text(response.chat_message, style=f"bold {self.color}")
-    return self.response
+    def get_response(self, prompt):
+        input_schema = BaseAgentInputSchema(chat_message=prompt)
+        response = self.agent.run(input_schema)
+        self.response = Text(response.chat_message, style=f"bold {self.color}")
+        return self.response
