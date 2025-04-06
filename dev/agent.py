@@ -28,7 +28,7 @@ class DiscussionAgent:
         self.client = instructor.from_openai(
             OllamaClient(base_url="http://localhost:11434/v1", api_key="ollama"), mode=instructor.Mode.JSON
         )
-        self.model = "phi3:medium"
+        self.model = "phi3:mini"
 
     def get_response(self, prompt):
         input_schema = BaseAgentInputSchema(chat_message=prompt)

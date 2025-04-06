@@ -4,7 +4,7 @@ import requests
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
 # Define the prompt
-payload = {"model": "phi3:medium", "prompt": "Explain what gravity is in simple terms.", "stream": False}
+payload = {"model": "phi3:mini", "prompt": "Explain what gravity is in simple terms.", "stream": False}
 
 # Send the request
 response = requests.post(OLLAMA_URL, json=payload)
