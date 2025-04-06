@@ -9,18 +9,23 @@ from atomic_agents.agents.base_agent import BaseAgent, BaseAgentConfig, BaseAgen
 
 
 class DiscussionAgent:
-    def __init__(self, name: str, color: str):
+    def __init__(self, name: str, color: str, system_prompt_generator=None):
         self.name = name
         self.color = color
+        self.system_prompt_generator = system_prompt_generator
         self.memory = AgentMemory()
         self.setup_client()
         self.agent = BaseAgent(
             config=BaseAgentConfig(
-                client=self.client, model=self.model, memory=self.memory, model_api_parameters={"max_tokens": 2048}
+                client=self.client,
+                model=self.model,
+                memory=self.memory,
+                model_api_parameters={"max_tokens": 2048},
+                system_prompt_generator=self.system_prompt_generator,
             )
         )
         # Initialize memory with an initial message from the assistant
-        initial_message = BaseAgentOutputSchema(chat_message="Hello! How can I assist you today?")
+        initial_message = BaseAgentOutputSchema(chat_message="I am a helpful assistant.")
         self.memory.add_message("assistant", initial_message)
         self.console = Console()
 
