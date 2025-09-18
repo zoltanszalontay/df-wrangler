@@ -35,6 +35,5 @@ ENV/
 .coverage
 .to
  
- # project specific
- test/
-
+# project specific
+test/
