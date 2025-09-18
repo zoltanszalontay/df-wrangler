@@ -20,7 +20,7 @@ The application leverages a local Ollama instance with the `llama3` model to int
 /df-wrangler
 ├── client/             # CLI client application
 │   ├── main.py
-│   ├── requirements.txt
+│   ├── pyproject.toml
 │   └── setup.sh
 ├── server/             # FastAPI backend server
 │   ├── app/
@@ -34,51 +34,42 @@ The application leverages a local Ollama instance with the `llama3` model to int
 │   ├── storage/        # Directory for pickled dataframe states
 │   ├── tests/          # Unit and property-based tests
 │   ├── .env            # Environment variables
-│   ├── requirements.txt
+│   ├── pyproject.toml
 │   └── setup.sh
 └── README.md           # This file
 ```
 
 ## 1. Installation & Setup
 
-This project uses Python virtual environments to manage dependencies. Setup scripts are provided for convenience.
+This project uses `uv` to manage dependencies.
 
 ### Prerequisites
 
 -   Python 3.8+
+-   [uv](https://github.com/astral-sh/uv) installed.
 -   [Ollama](https://ollama.com/) installed and running.
 
 ### Server Setup
 
 1.  **Navigate to the server directory:**
     ```bash
-    cd /Users/zoltansz/Downloads/df-wrangler/server
+    cd server
     ```
 
-2.  **Make the setup script executable:**
-    ```bash
-    chmod +x setup.sh
-    ```
-
-3.  **Run the setup script:**
+2.  **Run the setup script:**
     ```bash
     ./setup.sh
     ```
-    This will create a `venv` directory, activate it, and install the required Python packages.
+    This will create a `.venv` directory, activate it, and install the required Python packages.
 
 ### Client Setup
 
 1.  **Navigate to the client directory:**
     ```bash
-    cd /Users/zoltansz/Downloads/df-wrangler/client
+    cd client
     ```
 
-2.  **Make the setup script executable:**
-    ```bash
-    chmod +x setup.sh
-    ```
-
-3.  **Run the setup script:**
+2.  **Run the setup script:**
     ```bash
     ./setup.sh
     ```
@@ -104,8 +95,8 @@ You will need two separate terminal windows to run the server and the client.
 
 1.  **Navigate to the server directory and activate the virtual environment:**
     ```bash
-    cd /Users/zoltansz/Downloads/df-wrangler/server
-    source venv/bin/activate
+    cd server
+    source .venv/bin/activate
     ```
 
 2.  **Start the FastAPI server with Uvicorn:**
@@ -118,8 +109,8 @@ You will need two separate terminal windows to run the server and the client.
 
 1.  **In a new terminal, navigate to the client directory and activate the virtual environment:**
     ```bash
-    cd /Users/zoltansz/Downloads/df-wrangler/client
-    source venv/bin/activate
+    cd client
+    source .venv/bin/activate
     ```
 
 2.  **Run the client application:**

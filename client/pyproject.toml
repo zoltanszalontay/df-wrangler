@@ -1,0 +1,9 @@
+[project]
+name = "df-wrangler-client"
+version = "0.1.0"
+
+dependencies = [
+    "rich",
+    "requests",
+    "prompt_toolkit",
+]

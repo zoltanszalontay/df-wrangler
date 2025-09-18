@@ -1,0 +1,16 @@
+[project]
+name = "df-wrangler-server"
+version = "0.1.0"
+
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "python-dotenv",
+    "pandas",
+    "hydra-core",
+    "omegaconf",
+    "rich",
+    "python-multipart",
+    "openai",
+    "seaborn",
+]

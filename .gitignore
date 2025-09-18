@@ -46,4 +46,6 @@ ENV/
 df-wrangler.code-workspace
 .DS_Store
 /server/.env
-/.vscode/
+.vscode/
+uv.lock
+
