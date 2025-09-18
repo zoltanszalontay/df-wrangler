@@ -36,4 +36,6 @@ ENV/
 .to
  
 # project specific
-test/
+/test/
+/data/
+/.vscode/
