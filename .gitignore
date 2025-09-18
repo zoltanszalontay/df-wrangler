@@ -39,3 +39,6 @@ ENV/
 /test/
 /data/
 /.vscode/
+/server/storage/*
+!/server/storage/plot/
+/server/storage/plot/*
