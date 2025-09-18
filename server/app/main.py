@@ -13,11 +13,11 @@ def create_fastapi_app() -> FastAPI:
         cfg = hydra.compose(config_name="config")
 
     # Pass the loaded config to services that need it
-    from app.services.llm_service import LLMService
+    from .services.llm_service import LLMService
     llm_service_instance = LLMService(config=cfg)
 
     # Import endpoints after llm_service_instance is created
-    from app.api import endpoints
+    from .api import endpoints
 
     fastapi_app = FastAPI()
 

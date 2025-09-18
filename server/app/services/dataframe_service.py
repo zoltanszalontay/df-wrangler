@@ -1,5 +1,5 @@
 import pandas as pd
-from app.services.storage_service import storage_service
+from .storage_service import storage_service
 
 class DataFrameService:
     def __init__(self):

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Body
 from fastapi.responses import StreamingResponse
-from app.services.dataframe_service import dataframe_service
-from app.services.code_execution_service import code_execution_service
+from ..services.dataframe_service import dataframe_service
+from ..services.code_execution_service import code_execution_service
 import pandas as pd
 import io
 import os
@@ -25,8 +25,10 @@ def handle_command(payload: dict = Body(...)):
 
     # 2. Route to the correct logic
     if command == "upload":
-        # The server's CWD is .../server, so its parent is the project root.
-        project_root = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        app_dir = os.path.dirname(current_file_dir)
+        server_dir = os.path.dirname(app_dir)
+        project_root = os.path.dirname(server_dir)
         file_path = args.get("file_path")
 
         # Resolve the path to an absolute path from the project root
@@ -69,6 +71,13 @@ def handle_command(payload: dict = Body(...)):
         # NOTE: This assumes the server is running at http://127.0.0.1:8000
         download_url = f"http://127.0.0.1:8000/download/{df_name}/{filename}"
         return {"download_url": download_url}
+
+    elif command == "list_dataframes":
+        dataframes = dataframe_service.get_all_dataframes()
+        if dataframes:
+            return {"message": "Currently loaded dataframes: " + ", ".join(dataframes.keys())}
+        else:
+            return {"message": "No dataframes currently loaded."}
 
     elif command == "analyze":
         analysis_prompt = args.get("prompt", user_prompt)

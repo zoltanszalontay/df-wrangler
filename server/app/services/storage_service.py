@@ -3,8 +3,12 @@ import os
 from datetime import datetime
 
 class StorageService:
-    def __init__(self, storage_dir="./storage"):
-        self.storage_dir = storage_dir
+    def __init__(self, storage_dir_relative_to_project_root="server/storage"):
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        app_dir = os.path.dirname(current_file_dir)
+        server_dir = os.path.dirname(app_dir)
+        project_root = os.path.dirname(server_dir)
+        self.storage_dir = os.path.join(project_root, storage_dir_relative_to_project_root)
         if not os.path.exists(self.storage_dir):
             os.makedirs(self.storage_dir)
 

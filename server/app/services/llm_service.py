@@ -2,8 +2,8 @@ import openai
 import os
 import json
 import re
-from app.services.dataframe_service import dataframe_service
-from app.services.code_execution_service import code_execution_service
+from .dataframe_service import dataframe_service
+from .code_execution_service import code_execution_service
 
 class LLMService:
     def __init__(self, config):
@@ -25,13 +25,18 @@ The available commands are:
 - 'pop': For reverting to the previous state. Requires no arguments.
 - 'remove': For removing a dataframe. Requires 'df_name'.
 - 'download': For downloading a dataframe to a CSV file. Requires 'df_name' and an optional 'filename'.
+- 'list_dataframes': For listing all currently loaded dataframes. Requires no arguments.
 - 'analyze': For any other data analysis task that involves querying or manipulating loaded dataframes. The original prompt is passed through.
 
 Here are some examples:
 
-User prompt: "upload /data/my_file.csv"
+User prompt: "upload data/my_file.csv"
 Your response:
-{"command": "upload", "args": {"file_path": "/data/my_file.csv"}}
+{"command": "upload", "args": {"file_path": "data/my_file.csv"}}
+
+User prompt: "show the list of uploaded files"
+Your response:
+{"command": "list_dataframes", "args": {}}
 
 User prompt: "rename df_old to df_new"
 Your response:
@@ -120,6 +125,7 @@ You have access to the following tools:
 - `dataframe_service`: An object to manage dataframes. Use `dataframe_service.get_dataframe("df_name")` to get a dataframe.
 - `results_history`: A list of the results of the last 10 commands. `results_history[-1]` is the most recent result.
 - `last_result`: A convenient alias for `results_history[-1]`.
+- `plots_dir`: The absolute path to the directory where plots should be saved.
 
 **Your Task:**
 Your task is to generate a single block of Python code to answer the user's prompt. The result of your code MUST be assigned to a variable named `result`.
@@ -131,9 +137,12 @@ Your task is to generate a single block of Python code to answer the user's prom
 4.  **NEVER generate code that is not related to data analysis with pandas.**
 5.  **NEVER use `print()` statements.**
 6.  **NEVER explain the code.** Just generate the code block.
-7.  **NEVER transpose the final `result` dataframe.**
+7.  **If the result is a single-row pandas Series or DataFrame, ensure it is transposed to be displayed horizontally.**
 
 **How to Handle Common Scenarios:**
+
+*   **Single Row Output:** If your result is a single-row Series or DataFrame, transpose it to ensure horizontal display.
+    *   **Example:** `result = df.loc[index].to_frame().T`
 
 *   **Data Cleaning:** Before any numeric operations, you MUST inspect the columns and if they contain non-numeric characters, you MUST clean them and convert them to a numeric type.
     *   **Example:** `df['col'] = pd.to_numeric(df['col'].str.replace(r'[^0-9.]', '', regex=True), errors='coerce')`
@@ -154,14 +163,15 @@ Your task is to generate a single block of Python code to answer the user's prom
 
 *   **Plotting:**
     1.  **NEVER use `plt.show()`.** It will crash the application. You MUST save the plot to a file.
-    2.  Save plots to the `storage/plots/` directory.
-    3.  The `result` variable MUST be set to the relative path of the saved plot file (e.g., `result = 'storage/plots/my_plot.png'`).
-    4.  **Example:**
+    2.  The `result` variable MUST be set to the absolute path of the saved plot file.
+    3.  **Example:**
         ```python
         import matplotlib.pyplot as plt
+        import os
         plt.figure()
         plt.plot([1, 2, 3])
-        plot_path = 'storage/plots/my_plot.png'
+        plot_filename = 'my_plot.png'
+        plot_path = os.path.join(plots_dir, plot_filename)
         plt.savefig(plot_path)
         result = plot_path
         ```
@@ -190,6 +200,19 @@ Your task is to generate a single block of Python code to answer the user's prom
         *   You generate: `result = dataframe_service.get_dataframe("df_my_data").nlargest(10, 'score')`
         *   User: "from the first result, show me the ones with a score less than 30"
         *   You generate: `result = results_history[-3][results_history[-3]['score'] < 30]`
+
+*   **Multiple Rows for Max/Min:** When asked for rows with maximal or minimal values, ensure all matching rows are returned. Do not use `idxmax()` or `idxmin()` directly to select rows if multiple rows could share the same maximal/minimal value. Instead, filter the DataFrame.
+    *   **Example (General Max/Min):**
+        ```python
+        max_value = df['column_name'].max()
+        result = df[df['column_name'] == max_value]
+        ```
+    *   **Example (Max/Min Difference between Consecutive Rows):** When asked for rows that show the maximal or minimal difference between a value and its previous value, identify the index of the maximal/minimal difference, and then return both the row at that index and the preceding row.
+        ```python
+        df['diff_column'] = df['value_column'] - df['value_column'].shift(1)
+        max_diff_index = df['diff_column'].idxmax()
+        result = df.loc[[max_diff_index - 1, max_diff_index]]
+        ```
 
 *   **Ambiguous Prompts:** If the user's prompt is ambiguous (e.g., "this number"), you MUST look at the `results_history` to infer the context.
     *   **Example:**

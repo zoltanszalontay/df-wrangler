@@ -3,10 +3,18 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import os
 
 class CodeExecutionService:
     def __init__(self):
         self.results_history = []
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        app_dir = os.path.dirname(current_file_dir)
+        server_dir = os.path.dirname(app_dir)
+        project_root = os.path.dirname(server_dir)
+        self.plots_dir = os.path.join(project_root, "server", "storage", "plots")
+        if not os.path.exists(self.plots_dir):
+            os.makedirs(self.plots_dir)
 
     def execute(self, code: str, dataframe_service) -> any:
         """
@@ -19,7 +27,8 @@ class CodeExecutionService:
             "np": np,
             "plt": plt,
             "results_history": self.results_history,
-            "last_result": self.results_history[-1] if self.results_history else None
+            "last_result": self.results_history[-1] if self.results_history else None,
+            "plots_dir": self.plots_dir
         }
         
         try:

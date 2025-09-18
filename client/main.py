@@ -1,13 +1,14 @@
 # df-wrangler client (fixed) — copy me
-import requests
-from rich.console import Console
-from prompt_toolkit import PromptSession
-from prompt_toolkit.history import FileHistory
-from prompt_toolkit.formatted_text import FormattedText
-from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.keys import Keys
 import os
 import platform
+
+import requests
+from prompt_toolkit import PromptSession
+from prompt_toolkit.formatted_text import FormattedText
+from prompt_toolkit.history import FileHistory
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.keys import Keys
+from rich.console import Console
 
 console = Console()
 
@@ -141,10 +142,10 @@ while True:
         elif "message" in server_response:
             console.print(f"[blue]{server_response['message']}[/blue]")
         elif "result" in server_response:
-            console.print(f"[cyan]{server_response['result']}[/cyan]")
             if "code" in server_response:
                 console.print("[yellow]Generated Code:[/yellow]")
                 console.print(server_response["code"])
+            console.print(f"[cyan]{server_response['result']}[/cyan]")
         else:
             console.print(f"[yellow]Unexpected server response: {server_response}[/yellow]")
 
