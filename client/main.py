@@ -125,14 +125,17 @@ while True:
                     console.print(upload_response.json()["message"])
             else:
                 console.print(f"[red]Error: File not found or path not provided by server: {file_path}[/red]")
-        elif "plot_path" in server_response:
-            plot_path = server_response.get("plot_path")
-            console.print(f"[green]Plot saved to: {plot_path}[/green]")
-            if platform.system() == "Darwin":
-                console.print("[green]Opening plot...[/green]")
-                os.system(f"open '{plot_path}'")
-            else:
-                console.print(f"Please open the plot manually: {plot_path}")
+        elif "plot_url" in server_response and "code" in server_response:
+            plot_url = server_response.get("plot_url")
+            code_content = server_response.get("code")
+            console.print(f"[green]Your plot is ready. Please open this URL in your browser:[/green]")
+            console.print(f"[bold blue]{plot_url}[/bold blue]")
+            console.print("[yellow]Generated Code:[/yellow]")
+            console.print(code_content)
+        elif "plot_url" in server_response:
+            plot_url = server_response.get("plot_url")
+            console.print(f"[green]Your plot is ready. Please open this URL in your browser:[/green]")
+            console.print(f"[bold blue]{plot_url}[/bold blue]")
         elif "download_url" in server_response:
             download_url = server_response.get("download_url")
             console.print(f"[green]Your file is ready. Please open this URL in your browser to download it:[/green]")

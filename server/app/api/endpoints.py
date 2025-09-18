@@ -85,11 +85,9 @@ def handle_command(payload: dict = Body(...)):
 
         if is_code:
             result = code_execution_service.execute(content, dataframe_service)
-            # Check if the result is a path to a plot
-            if isinstance(result, str) and result.startswith("storage/plots/") and os.path.exists(result):
-                # The CWD is the 'server' directory, so resolve the relative path
-                absolute_path = os.path.abspath(result)
-                return {"plot_path": absolute_path, "code": content}
+            # Check if the result is a dictionary containing a plot_url
+            if isinstance(result, dict) and "plot_url" in result:
+                return {"plot_url": result["plot_url"], "code": content}
             else:
                 return {"result": str(result), "code": content}
         else:

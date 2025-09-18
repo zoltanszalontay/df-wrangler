@@ -2,13 +2,13 @@
 
 `df-wrangler` is a CLI chatbot application designed for interactive data analysis. It uses a FastAPI backend and a command-line client to allow users to upload CSV files, manipulate them as pandas DataFrames using natural language prompts, and receive results directly in the terminal.
 
-The application leverages a local Ollama instance with the `llama3` model to interpret user commands and generate executable Python/pandas code. The code generation has been made more robust to handle general queries and common LLM output variations.
+The application leverages OpenAI with the `gpt-4o-mini` model to interpret user commands and generate executable Python/pandas code. The code generation has been made more robust to handle general queries and common LLM output variations.
 
 ## Features
 
 -   **CLI Interface**: Interact with your data using a simple, prompt-based command line, built with `rich` and `prompt_toolkit` for history.
 -   **CSV Upload**: Easily upload multiple CSV files, which are automatically loaded into pandas DataFrames.
--   **Natural Language Processing**: Translates complex analytical prompts into Python/pandas code using a local LLM (Ollama `phi3:mini`). The LLM also interprets general commands like `upload` and `rename`.
+-   **Natural Language Processing**: Translates complex analytical prompts into Python/pandas code using OpenAI (gpt-4o-mini). The LLM (OpenAI gpt-4o-mini) also interprets general commands like `upload` and `rename`.
 -   **Persistent & Versioned Storage**: DataFrame states are automatically saved after each operation. You can "pop" back to a previous state, providing a version history.
 -   **Extensible & Scalable**: Built with FastAPI and designed to be easily scalable, with considerations for deployment via Ray Serve.
 -   **Server-side Prompt Logging**: User prompts sent to the LLM are now logged on the server for debugging and monitoring purposes.
@@ -45,7 +45,7 @@ This project uses `uv` to manage dependencies.
 
 ### Prerequisites
 
--   Python 3.8+
+-   Python 3.13
 -   [uv](https://github.com/astral-sh/uv) installed.
 -   [Ollama](https://ollama.com/) installed and running.
 
@@ -76,16 +76,7 @@ This project uses `uv` to manage dependencies.
 
 ## 2. Configuration
 
-### Ollama LLM
 
-The server is configured to use a local Ollama instance.
-
-1.  **Pull the `llama3` model:**
-    ```bash
-    ollama run llama3
-    ```
-
-2.  **Ensure Ollama is running.** The server will attempt to connect to it at `http://localhost:11434` by default. This can be changed in `df-wrangler/server/app/conf/config.yaml`.
 
 ## 3. Running the Application
 
@@ -166,10 +157,13 @@ Interact with the application by typing commands at the `df-wrangler>` prompt. T
 10. `What are the data types of the columns in df_new?`
     *   *Result: Displays the pandas `dtypes` for the newly created dataframe.*
 
+11. `Show a histogram where the x axis is the weeks (rows) and the y axis is the sum of the winning numbers for that week.`
+    *   *Result: Displays a histogram of the sum of winning numbers per week, saved as a PNG file.*
+
 #### Reverting State with Pop
 
-11. `Pop the last change`
+12. `Pop the last change`
     *   *Result: The creation of `df_new` is undone. The application state is reverted to before command #9 was executed.*
 
-12. `Undo the previous operation`
+13. `Undo the previous operation`
     *   *Result: The rename of `df_te` is undone. The dataframe is now named `df_dashboard_te` again.*

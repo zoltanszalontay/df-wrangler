@@ -4,6 +4,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
+import uuid # Import uuid for unique filenames
+import urllib.parse # Import urllib.parse for URL encoding
 
 class CodeExecutionService:
     def __init__(self):
@@ -32,20 +34,50 @@ class CodeExecutionService:
         }
         
         try:
+            # Get the number of figures before execution
+            initial_fignums = plt.get_fignums()
+
             # Execute the code
             exec(code, global_vars)
-            # The result of the code is expected to be in the 'result' variable
-            result = global_vars.get("result", "Code executed successfully, but no result was returned.")
             
-            self.results_history.append(result)
+            # Check if any new figures were created or existing ones modified
+            current_fignums = plt.get_fignums()
+            
+            plot_url = None
+            if current_fignums: # If there are any open figures
+                # Assuming the last created figure is the one we want to save
+                # This might need refinement if multiple plots are generated
+                fig = plt.figure(current_fignums[-1])
+                
+                # Generate a unique filename for the plot
+                plot_filename = f"plot_{uuid.uuid4().hex}.jpg"
+                plot_filepath = os.path.join(self.plots_dir, plot_filename)
+                
+                # Save the plot
+                fig.savefig(plot_filepath)
+                plt.close(fig) # Close the figure to free memory
+
+                # Construct the URL for the plot
+                # Assuming the server is running on localhost:8000 and static files are served from /plots
+                encoded_plot_filename = urllib.parse.quote(plot_filename)
+                plot_url = f"http://localhost:8000/plots/{encoded_plot_filename}"
+                
+            final_result = None
+            if plot_url:
+                final_result = {"plot_url": plot_url}
+            else:
+                # The result of the code is expected to be in the 'result' variable
+                final_result = global_vars.get("result", "Code executed successfully, but no result was returned.")
+            
+            self.results_history.append(final_result)
             if len(self.results_history) > 10: # Keep the last 10 results
                 self.results_history.pop(0)
 
             # If the result is a pandas DataFrame, return its string representation
-            if isinstance(result, pd.DataFrame):
-                return result.to_string()
+            if isinstance(final_result, pd.DataFrame):
+                return final_result.to_string()
             else:
-                return result
+                return final_result
 
         except Exception as e:
             return f"Error executing code: {e}"
