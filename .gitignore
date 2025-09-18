@@ -40,5 +40,10 @@ ENV/
 /data/
 /.vscode/
 /server/storage/*
-!/server/storage/plot/
-/server/storage/plot/*
+!/server/storage/plots/
+/server/storage/plots/*
+.DS_Store
+df-wrangler.code-workspace
+.DS_Store
+/server/.env
+
