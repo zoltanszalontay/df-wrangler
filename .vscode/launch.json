@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Server (uvicorn)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "server.app.main:app",
+        "--reload"
+      ],
+      "jinja": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Run Client (main.py)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/client/main.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/client",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/client"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run Client + Server",
+      "configurations": [
+        "Run Server (uvicorn)",
+        "Run Client (main.py)"
+      ],
+      "stopAll": true
+    }
+  ]
+}

@@ -38,7 +38,6 @@ ENV/
 # project specific
 /test/
 /data/
-/.vscode/
 /server/storage/*
 !/server/storage/plots/
 /server/storage/plots/*
@@ -46,6 +45,5 @@ ENV/
 df-wrangler.code-workspace
 .DS_Store
 /server/.env
-.vscode/
 uv.lock
 
