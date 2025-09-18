@@ -1,0 +1,42 @@
+import pickle
+import os
+from datetime import datetime
+
+class StorageService:
+    def __init__(self, storage_dir="./storage"):
+        self.storage_dir = storage_dir
+        if not os.path.exists(self.storage_dir):
+            os.makedirs(self.storage_dir)
+
+    def save_state(self, state):
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
+        file_path = os.path.join(self.storage_dir, f"state_{timestamp}.pkl")
+        with open(file_path, "wb") as f:
+            pickle.dump(state, f)
+
+    def get_latest_state(self):
+        files = sorted(
+            [f for f in os.listdir(self.storage_dir) if f.endswith(".pkl")], 
+            reverse=True
+        )
+        if not files:
+            return None
+        file_path = os.path.join(self.storage_dir, files[0])
+        # Check if the latest path is a file indeed, not a directory
+        if not os.path.isfile(file_path):
+            return None
+        with open(file_path, "rb") as f:
+            return pickle.load(f)
+
+    def pop_state(self):
+        files = sorted(
+            [f for f in os.listdir(self.storage_dir) if f.endswith(".pkl")],
+            reverse=True
+        )
+        if len(files) < 2:
+            return None # Cannot pop the initial state
+        file_to_remove = os.path.join(self.storage_dir, files[0])
+        os.remove(file_to_remove)
+        return self.get_latest_state()
+
+storage_service = StorageService()
