@@ -25,7 +25,6 @@ The application leverages OpenAI with the `gpt-4o-mini` model to interpret user 
 ├── server/             # FastAPI backend server
 │   ├── app/
 │   │   ├── api/        # API endpoints
-
 │   │   ├── conf/       # Hydra configuration (config.yaml)
 │   │   ├── core/       # Core logic and config loading
 │   │   ├── schemas/    # Pydantic models
@@ -47,7 +46,7 @@ This project uses `uv` to manage dependencies.
 
 -   Python 3.13
 -   [uv](https://github.com/astral-sh/uv) installed.
--   [Ollama](https://ollama.com/) installed and running.
+-   [gpt-4o-mini](https://platform.openai.com/) configured.
 
 ### Server Setup
 
@@ -119,7 +118,7 @@ Interact with the application by typing commands at the `df-wrangler>` prompt. T
 #### Uploading CSV files
 
 1.  `Upload the file located at /path/to/your/dashboard_pr.csv`
-    *   *Result: The server will instruct the client to upload the file, and a dataframe named `df_dashboard_pr` will be created.*
+    *   *Result: The server will instruct the client to upload the file, and a dataframe named `df_dashboard_pr` will be created. The path should start from the project root.*
 
 2.  `Can you load the data from ./data/dashboard_te.csv?`
     *   *Result: The server will instruct the client to upload the file, and a dataframe named `df_dashboard_te` will be created.*
