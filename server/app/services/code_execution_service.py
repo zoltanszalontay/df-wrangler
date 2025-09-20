@@ -66,8 +66,30 @@ class CodeExecutionService:
             if plot_url:
                 final_result = {"plot_url": plot_url}
             else:
-                # The result of the code is expected to be in the 'result' variable
-                final_result = global_vars.get("result", "Code executed successfully, but no result was returned.")
+                result = global_vars.get("result")
+                if isinstance(result, (pd.Series, pd.DataFrame)):
+                    fig = None
+                    try:
+                        fig, ax = plt.subplots()
+                        kind = 'bar' if isinstance(result, pd.Series) else 'line'
+                        result.plot(ax=ax, kind=kind)
+                        ax.set_title("Auto-generated Plot")
+                        plt.tight_layout()
+
+                        plot_filename = f"plot_{uuid.uuid4().hex}.jpg"
+                        plot_filepath = os.path.join(self.plots_dir, plot_filename)
+                        fig.savefig(plot_filepath)
+                        
+                        encoded_plot_filename = urllib.parse.quote(plot_filename)
+                        plot_url = f"http://localhost:8000/plots/{encoded_plot_filename}"
+                        final_result = {"plot_url": plot_url}
+                    except Exception as e:
+                        final_result = result
+                    finally:
+                        if fig:
+                            plt.close(fig)
+                else:
+                    final_result = result if result is not None else "Code executed successfully, but no result was returned."
             
             self.results_history.append(final_result)
             if len(self.results_history) > 10: # Keep the last 10 results

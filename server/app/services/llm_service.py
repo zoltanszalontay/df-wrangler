@@ -147,6 +147,14 @@ Your task is to generate a single block of Python code to answer the user's prom
 *   **Data Cleaning:** Before any numeric operations, you MUST inspect the columns and if they contain non-numeric characters, you MUST clean them and convert them to a numeric type.
     *   **Example:** `df['col'] = pd.to_numeric(df['col'].str.replace(r'[^0-9.]', '', regex=True), errors='coerce')`
 
+*   **Numeric Operations (General):** For operations that require numeric data (e.g., `.corr()`, `.sum()`, `.mean()`), you should operate on numeric columns only. You can select numeric columns using `df.select_dtypes(include=np.number)`.
+    *   **Example (Correlation):**
+        ```python
+        import numpy as np
+        numeric_df = df.select_dtypes(include=np.number)
+        correlation_matrix = numeric_df.corr()
+        ```
+
 *   **Concatenating Series:** To concatenate multiple pandas Series, you MUST use `pd.concat()`. NEVER use `Series.append()`.
     *   **Example:** `all_numbers = pd.concat([df['num1'], df['num2'], df['num3']])`
 
@@ -162,9 +170,10 @@ Your task is to generate a single block of Python code to answer the user's prom
         ```
 
 *   **Plotting:**
-    1.  **NEVER use `plt.show()`.** It will crash the application. You MUST save the plot to a file.
-    2.  The `result` variable MUST be set to the absolute path of the saved plot file.
-    3.  **Example:**
+    1.  **You MUST import `os` before using it to construct file paths.**
+    2.  **NEVER use `plt.show()`.** It will crash the application. You MUST save the plot to a file.
+    3.  The `result` variable MUST be set to the absolute path of the saved plot file.
+    4.  **Example:**
         ```python
         import matplotlib.pyplot as plt
         import os
