@@ -11,8 +11,6 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
 from rich.console import Console
 
-from client.core.telemetry import setup_telemetry
-
 # Configure logging
 log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "client.log")
 logging.basicConfig(
@@ -22,12 +20,6 @@ logging.basicConfig(
 )
 
 console = Console()
-
-# Setup OpenTelemetry if enabled via environment variable
-if os.getenv("OTEL_CLIENT_ENABLED", "false").lower() in ("true", "1"):
-    service_name = os.getenv("OTEL_SERVICE_NAME", "df-wrangler-client")
-    otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
-    setup_telemetry(service_name, otlp_endpoint)
 
 # Define custom key bindings
 kb = KeyBindings()

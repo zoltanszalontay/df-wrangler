@@ -5,8 +5,6 @@ from omegaconf import OmegaConf
 import os
 from dotenv import load_dotenv # Import load_dotenv
 
-from .core.telemetry import setup_telemetry # Import the telemetry setup function
-
 # Function to create and configure the FastAPI app
 def create_fastapi_app() -> FastAPI:
     load_dotenv() # Load environment variables from .env file
@@ -15,17 +13,14 @@ def create_fastapi_app() -> FastAPI:
     with hydra.initialize(config_path="conf", version_base=None):
         cfg = hydra.compose(config_name="config")
 
-    fastapi_app = FastAPI()
-
-    # Setup OpenTelemetry if enabled in config
-    if cfg.get("telemetry", {}).get("enabled", False):
-        service_name = os.getenv("OTEL_SERVICE_NAME", "df-wrangler-server")
-        otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
-        setup_telemetry(fastapi_app, service_name, otlp_endpoint)
-
     # Pass the loaded config to services that need it
     from .services.llm_service import LLMService
     llm_service_instance = LLMService(config=cfg)
+
+    # Import endpoints after llm_service_instance is created
+    from .api import endpoints
+
+    fastapi_app = FastAPI()
 
     # Pass the llm_service_instance to the endpoints router
     endpoints.router.llm_service = llm_service_instance

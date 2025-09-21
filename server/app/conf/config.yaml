@@ -1,8 +1,6 @@
 llm:
   model: gpt-4o-mini
   # model: gpt-4o
-telemetry:
-  enabled: false
 logging:
   client:
     level: 'on'
