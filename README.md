@@ -12,6 +12,7 @@ The application leverages OpenAI with the `gpt-4o-mini` model to interpret user 
 -   **Persistent & Versioned Storage**: DataFrame states are automatically saved after each operation. You can "pop" back to a previous state, providing a version history.
 -   **Extensible & Scalable**: Built with FastAPI and designed to be easily scalable, with considerations for deployment via Ray Serve.
 -   **Server-side Prompt Logging**: User prompts sent to the LLM are now logged on the server for debugging and monitoring purposes.
+-   **OpenTelemetry Integration**: Both client and server are instrumented with OpenTelemetry for distributed tracing and metrics, enabling better observability.
 -   **Tested**: Includes unit tests (unittest) and property-based tests (Hypothesis).
 
 ## Project Structure
@@ -74,6 +75,40 @@ This project uses `uv` to manage dependencies.
     ```
 
 ## 2. Configuration
+
+### OpenTelemetry Setup
+
+`df-wrangler` is instrumented with OpenTelemetry to provide distributed tracing and metrics. To enable and configure OpenTelemetry, you can set the following environment variables:
+
+-   `OTEL_SERVICE_NAME`: A unique name for the service (e.g., `df-wrangler-server`, `df-wrangler-client`).
+-   `OTEL_EXPORTER_OTLP_ENDPOINT`: The endpoint of your OpenTelemetry Collector or tracing backend (e.g., `http://localhost:4317`).
+-   `OTEL_METRICS_EXPORTER`: Set to `otlp` to enable OTLP metrics export.
+-   `OTEL_LOGS_EXPORTER`: Set to `otlp` to enable OTLP logs export.
+-   `OTEL_TRACES_EXPORTER`: Set to `otlp` to enable OTLP traces export.
+
+Example environment variables for the server:
+
+```bash
+export OTEL_SERVICE_NAME="df-wrangler-server"
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
+export OTEL_METRICS_EXPORTER="otlp"
+export OTEL_LOGS_EXPORTER="otlp"
+export OTEL_TRACES_EXPORTER="otlp"
+```
+
+Example environment variables for the client:
+
+```bash
+export OTEL_SERVICE_NAME="df-wrangler-client"
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
+export OTEL_METRICS_EXPORTER="otlp"
+export OTEL_LOGS_EXPORTER="otlp"
+export OTEL_TRACES_EXPORTER="otlp"
+```
+
+It is highly recommended to run an OpenTelemetry Collector to receive, process, and export telemetry data to your chosen backend (e.g., Jaeger, Prometheus, Grafana).
+
+
 
 
 
