@@ -1,5 +1,6 @@
 import pandas as pd
 from .storage_service import storage_service
+from .milvus_service import milvus_service
 
 class DataFrameService:
     def __init__(self):
@@ -17,6 +18,13 @@ class DataFrameService:
     def add_dataframe(self, name: str, df: pd.DataFrame):
         self.dataframes[name] = df
         self.save_to_storage()
+        schema_text = f"""DataFrame: {name}
+Columns and Data Types:
+{df.dtypes.to_string()}
+
+First 5 rows:
+{df.head().to_string()}"""
+        milvus_service.add_dataframe_schema(name, schema_text)
 
     def get_dataframe(self, name: str) -> pd.DataFrame:
         return self.dataframes.get(name)

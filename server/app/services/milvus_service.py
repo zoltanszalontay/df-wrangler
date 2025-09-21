@@ -23,6 +23,7 @@ class MilvusService:
             schema.add_field("example_text", DataType.VARCHAR, max_length=5000)
             self.client.create_collection(collection_name="code_examples", schema=schema)
 
+        if not self.client.has_index("code_examples"):
             index_params = self.client.prepare_index_params()
             index_params.add_index(
                 field_name="vector",
@@ -45,6 +46,7 @@ class MilvusService:
             schema.add_field("result", DataType.VARCHAR, max_length=5000)
             self.client.create_collection(collection_name="conversation_history", schema=schema)
 
+        if not self.client.has_index("conversation_history"):
             index_params = self.client.prepare_index_params()
             index_params.add_index(
                 field_name="vector",
@@ -66,6 +68,7 @@ class MilvusService:
             schema.add_field("schema_text", DataType.VARCHAR, max_length=5000)
             self.client.create_collection(collection_name="dataframe_schemas", schema=schema)
 
+        if not self.client.has_index("dataframe_schemas"):
             index_params = self.client.prepare_index_params()
             index_params.add_index(
                 field_name="vector",
@@ -100,28 +103,42 @@ class MilvusService:
         """
         Adds a turn of the conversation to the history collection.
         """
-        # To be implemented
-        pass
+        embedding = self.model.encode(prompt)
+        data = [{"vector": embedding, "prompt": prompt, "code": code, "result": result}]
+        self.client.insert(collection_name="conversation_history", data=data)
 
     def search_conversation_history(self, query_text: str, top_k: int = 3) -> list:
         """
         Searches for relevant turns in the conversation history.
         """
-        # To be implemented
-        return []
+        query_embedding = self.model.encode(query_text)
+        results = self.client.search(
+            collection_name="conversation_history",
+            data=[query_embedding],
+            limit=top_k,
+            output_fields=["prompt", "code", "result"]
+        )
+        return [res['entity'] for res in results[0]]
 
-    def add_dataframe_schema(self, df_name: str, schema: str):
+    def add_dataframe_schema(self, df_name: str, schema_text: str):
         """
         Adds the schema of a dataframe to the Milvus collection.
         """
-        # To be implemented
-        pass
+        embedding = self.model.encode(schema_text)
+        data = [{"vector": embedding, "df_name": df_name, "schema_text": schema_text}]
+        self.client.insert(collection_name="dataframe_schemas", data=data)
 
     def search_dataframe_schemas(self, query_text: str, top_k: int = 1) -> list:
         """
         Searches for the most relevant dataframe schema.
         """
-        # To be implemented
-        return []
+        query_embedding = self.model.encode(query_text)
+        results = self.client.search(
+            collection_name="dataframe_schemas",
+            data=[query_embedding],
+            limit=top_k,
+            output_fields=["df_name", "schema_text"]
+        )
+        return [res['entity'] for res in results[0]]
 
 milvus_service = MilvusService()

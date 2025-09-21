@@ -4,6 +4,7 @@ import json
 import re
 from .dataframe_service import dataframe_service
 from .code_execution_service import code_execution_service
+from .milvus_service import milvus_service
 
 class LLMService:
     def __init__(self, config):
@@ -88,6 +89,12 @@ Your response:
         if not df_names:
             return ""
 
+        # Search for the most relevant dataframe schema
+        search_results = milvus_service.search_dataframe_schemas(prompt)
+        if search_results:
+            return search_results[0]['schema_text']
+
+        # Fallback to the old logic if no relevant schema is found
         df_name = None
         for name in df_names:
             if name in prompt:
@@ -117,9 +124,25 @@ Your response:
         """
         print(f"\n--- Code Generation Prompt (User Input) ---\n{prompt}\n---\n")
 
+        # Get context from Milvus
         dataframe_context = self._get_dataframe_context(prompt)
-        
-        prompt_template = """You are "DataWrangler", a friendly and helpful AI assistant that helps users analyze data with pandas. You are an expert in pandas and you always generate correct and efficient code.
+        examples = milvus_service.search_examples(prompt)
+        history = milvus_service.search_conversation_history(prompt)
+
+        examples_context = ""
+        if examples:
+            examples_context = "
+Relevant Examples:
+" + "
+".join(examples)
+
+        history_context = ""
+        if history:
+            history_context = "\nRelevant Conversation History:\n"
+            for turn in history:
+                history_context += f"User: {turn['prompt']}\nCode: {turn['code']}\nResult: {turn['result']}\n"
+
+        prompt_template = f"""You are "DataWrangler", a friendly and helpful AI assistant that helps users analyze data with pandas. You are an expert in pandas and you always generate correct and efficient code.
 
 You have access to the following tools:
 - `dataframe_service`: An object to manage dataframes. Use `dataframe_service.get_dataframe("df_name")` to get a dataframe.
@@ -248,7 +271,7 @@ Your task is to generate a single block of Python code to answer the user's prom
 Now, let's get to work! The user is waiting for your amazing code.
 """
         
-        system_prompt = prompt_template + f"\n\n{dataframe_context}\n\n"
+        system_prompt = f"{prompt_template}\n\n{dataframe_context}{examples_context}{history_context}\n\n"
 
         response = self.client.chat.completions.create(
             model=self.model,

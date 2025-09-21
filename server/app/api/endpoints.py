@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 from ..services.dataframe_service import dataframe_service
 from ..services.code_execution_service import code_execution_service
 from ..services.session_service import session_service
+from ..services.milvus_service import milvus_service
 import pandas as pd
 import io
 import os
@@ -93,12 +94,14 @@ def handle_command(payload: dict = Body(...)):
 
         if is_code:
             result = code_execution_service.execute(content, dataframe_service)
+            milvus_service.add_conversation_turn(analysis_prompt, content, str(result))
             # Check if the result is a dictionary containing a plot_url
             if isinstance(result, dict) and "plot_url" in result:
                 return {"plot_url": result["plot_url"], "code": content}
             else:
                 return {"result": str(result), "code": content}
         else:
+            milvus_service.add_conversation_turn(analysis_prompt, "", content)
             return {"message": content}
 
     else:
