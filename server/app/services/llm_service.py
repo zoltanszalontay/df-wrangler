@@ -2,9 +2,11 @@ import openai
 import os
 import json
 import re
+from datetime import datetime
 from .dataframe_service import dataframe_service
 from .code_execution_service import code_execution_service
 from .milvus_service import milvus_service
+from .logging_service import logging_service
 
 class LLMService:
     def __init__(self, config):
@@ -14,6 +16,15 @@ class LLMService:
             raise ValueError("OPENAI_API_KEY environment variable not set.")
         self.client = openai.OpenAI(api_key=api_key)
         self.model = self.config.llm.model
+
+    def log(self, message):
+        if logging_service.get_logging_level("llm") == "on":
+            log_file = logging_service.get_log_file("llm")
+            if log_file:
+                with open(log_file, "a", buffering=1) as f: # buffering=1 for line-buffering
+                    f.write(f"{datetime.now().strftime(\%Y-%m-%d %H:%M:%S,%f\")} - INFO - [LLMService] {message}")
+            else:
+                print(f"[LLMService] {message}")
 
     def _get_classification_prompt(self, user_prompt: str) -> str:
         prompt_template = """You are a command interpreter for a data analysis chatbot.
@@ -28,6 +39,9 @@ The available commands are:
 - 'download': For downloading a dataframe to a CSV file. Requires 'df_name' and an optional 'filename'.
 - 'list_dataframes': For listing all currently loaded dataframes. Requires no arguments.
 - 'analyze': For any other data analysis task that involves querying or manipulating loaded dataframes. The original prompt is passed through.
+- 'set_logging': For turning logging on or off for a specific service or all services. Requires 'service_name' (e.g., "llm", "dataframe", "all") and 'level' (e.g., "on", "off").
+- 'list_services': For listing all available services.
+- 'service_health': For getting the health of a specific service or all services.
 
 Here are some examples:
 
@@ -62,8 +76,30 @@ Your response:
 User prompt: "download my_df"
 Your response:
 {"command": "download", "args": {"df_name": "my_df", "filename": "my_df.csv"}}
+
+User prompt: "turn on logging for the llm service"
+Your response:
+{"command": "set_logging", "args": {"service_name": "llm", "level": "on"}}
+
+User prompt: "turn off logging for all services"
+Your response:
+{"command": "set_logging", "args": {"service_name": "all", "level": "off"}}
+
+User prompt: "list all services"
+Your response:
+{"command": "list_services", "args": {}}
+
+User prompt: "what is the health of the dataframe service?"
+Your response:
+{"command": "service_health", "args": {"service_name": "dataframe"}}
+
+User prompt: "show me the health of all services"
+Your response:
+{"command": "service_health", "args": {"service_name": "all"}}
 """
-        return prompt_template + user_prompt + "\nYour response:\n"
+        return f"""{prompt_template}{user_prompt}
+Your response:
+"""
 
     def classify_and_extract_command(self, prompt: str) -> dict:
         """
@@ -122,7 +158,7 @@ Your response:
         """
         Generates Python/pandas code from a user prompt.
         """
-        print(f"\n--- Code Generation Prompt (User Input) ---\n{prompt}\n---\n")
+        self.log(f"--- Code Generation Prompt (User Input) ---\n{prompt}\n---")
 
         # Get context from Milvus
         dataframe_context = self._get_dataframe_context(prompt)
@@ -131,14 +167,13 @@ Your response:
 
         examples_context = ""
         if examples:
-            examples_context = "
-Relevant Examples:
-" + "
-".join(examples)
+            examples_context = "\nRelevant Examples:\n" + "\n".join(examples)
 
         history_context = ""
         if history:
-            history_context = "\nRelevant Conversation History:\n"
+            history_context = """
+Relevant Conversation History:
+"""
             for turn in history:
                 history_context += f"User: {turn['prompt']}\nCode: {turn['code']}\nResult: {turn['result']}\n"
 
@@ -287,7 +322,7 @@ Now, let's get to work! The user is waiting for your amazing code.
             ]
         )
         raw_code = response.choices[0].message.content
-        print(f"\n--- Raw LLM Response ---\n{raw_code}\n---\n")
+        self.log(f"--- Raw LLM Response ---\n{raw_code}\n---")
         
         match = re.search(r'```(?:python\n)?(.*?)(?:```|$)', raw_code, re.DOTALL)
         if match:
@@ -299,3 +334,10 @@ Now, let's get to work! The user is waiting for your amazing code.
             return (True, code.strip())
         else:
             return (False, raw_code)
+
+    def health(self):
+        # For now, we'll just check if the OpenAI API key is set
+        if os.getenv("OPENAI_API_KEY"):
+            return "OK"
+        else:
+            return "Error: OPENAI_API_KEY not set"

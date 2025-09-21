@@ -1,5 +1,6 @@
 from statemachine import StateMachine, State
 from .dataframe_service import dataframe_service
+from .logging_service import logging_service
 
 class SessionStateMachine(StateMachine):
     # States
@@ -14,6 +15,19 @@ class SessionStateMachine(StateMachine):
     def __init__(self):
         super(SessionStateMachine, self).__init__()
         self.initialize_state()
+
+    def log(self, message):
+        if logging_service.get_logging_level("session") == "on":
+            log_file = logging_service.get_log_file("session")
+            if log_file:
+                with open(log_file, "a") as f:
+                    f.write(f"[SessionService] {message}\n")
+            else:
+                print(f"[SessionService] {message}")
+
+    def health(self):
+        # For now, this service is always considered healthy
+        return "OK"
 
     def initialize_state(self):
         """

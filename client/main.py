@@ -1,6 +1,7 @@
 # df-wrangler client (fixed) — copy me
 import os
 import platform
+import logging
 
 import requests
 from prompt_toolkit import PromptSession
@@ -9,6 +10,17 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
 from rich.console import Console
+from rich.logging import RichHandler
+
+# Configure logging
+log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "client.log")
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(log_file_path)
+    ]
+)
 
 console = Console()
 

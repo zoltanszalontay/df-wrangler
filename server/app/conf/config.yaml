@@ -1,2 +1,30 @@
 llm:
-  model: "gpt-4o-mini"
+  model: gpt-4o-mini
+logging:
+  client:
+    level: 'on'
+  code_execution:
+    level: 'on'
+    log_file: server/logs/code_execution.log
+  dataframe:
+    level: 'on'
+    log_file: server/logs/dataframe.log
+  llm:
+    level: 'on'
+    log_file: server/logs/llm.log
+  milvus:
+    level: 'on'
+    log_file: server/logs/milvus.log
+  session:
+    level: 'on'
+    log_file: server/logs/session.log
+  storage:
+    level: 'on'
+    log_file: server/logs/storage.log
+services:
+- llm
+- dataframe
+- milvus
+- code_execution
+- session
+- storage

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import os
 import uuid # Import uuid for unique filenames
 import urllib.parse # Import urllib.parse for URL encoding
+from .logging_service import logging_service
 
 class CodeExecutionService:
     def __init__(self):
@@ -17,6 +18,19 @@ class CodeExecutionService:
         self.plots_dir = os.path.join(project_root, "server", "storage", "plots")
         if not os.path.exists(self.plots_dir):
             os.makedirs(self.plots_dir)
+
+    def log(self, message):
+        if logging_service.get_logging_level("code_execution") == "on":
+            log_file = logging_service.get_log_file("code_execution")
+            if log_file:
+                with open(log_file, "a") as f:
+                    f.write(f"[CodeExecutionService] {message}\n")
+            else:
+                print(f"[CodeExecutionService] {message}")
+
+    def health(self):
+        # For now, this service is always considered healthy
+        return "OK"
 
     def execute(self, code: str, dataframe_service) -> any:
         """

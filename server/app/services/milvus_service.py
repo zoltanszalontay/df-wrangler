@@ -1,5 +1,6 @@
 from pymilvus import MilvusClient, DataType
 from sentence_transformers import SentenceTransformer
+from .logging_service import logging_service
 
 class MilvusService:
     def __init__(self, db_path="./milvus_app.db"):
@@ -8,10 +9,31 @@ class MilvusService:
         self.vector_dim = 384 # Dimension of the embeddings from all-MiniLM-L6-v2
         self.create_collections()
 
+    def log(self, message):
+        if logging_service.get_logging_level("milvus") == "on":
+            log_file = logging_service.get_log_file("milvus")
+            if log_file:
+                with open(log_file, "a") as f:
+                    f.write(f"[MilvusService] {message}\n")
+            else:
+                print(f"[MilvusService] {message}")
+
+    def health(self):
+        try:
+            self.client.list_collections()
+            return "OK"
+        except Exception as e:
+            return f"Error: {e}"
+
     def create_collections(self):
         """
         Creates the necessary collections in Milvus if they don't exist.
         """
+        collection_names = ["code_examples", "conversation_history", "dataframe_schemas"]
+        for collection_name in collection_names:
+            if self.client.has_collection(collection_name) and len(self.client.list_indexes(collection_name)) == 0:
+                self.client.drop_collection(collection_name)
+
         # Schema for code examples
         if not self.client.has_collection("code_examples"):
             schema = MilvusClient.create_schema(
@@ -23,7 +45,6 @@ class MilvusService:
             schema.add_field("example_text", DataType.VARCHAR, max_length=5000)
             self.client.create_collection(collection_name="code_examples", schema=schema)
 
-        if not self.client.has_index("code_examples"):
             index_params = self.client.prepare_index_params()
             index_params.add_index(
                 field_name="vector",
@@ -46,7 +67,6 @@ class MilvusService:
             schema.add_field("result", DataType.VARCHAR, max_length=5000)
             self.client.create_collection(collection_name="conversation_history", schema=schema)
 
-        if not self.client.has_index("conversation_history"):
             index_params = self.client.prepare_index_params()
             index_params.add_index(
                 field_name="vector",
@@ -68,7 +88,6 @@ class MilvusService:
             schema.add_field("schema_text", DataType.VARCHAR, max_length=5000)
             self.client.create_collection(collection_name="dataframe_schemas", schema=schema)
 
-        if not self.client.has_index("dataframe_schemas"):
             index_params = self.client.prepare_index_params()
             index_params.add_index(
                 field_name="vector",

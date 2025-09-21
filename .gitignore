@@ -36,6 +36,7 @@ ENV/
 .to
  
 # project specific
+/.vscode/settings.json
 /test/
 /data/
 /server/storage/*
@@ -47,3 +48,5 @@ df-wrangler.code-workspace
 /server/.env
 uv.lock
 milvus_app.db
+.milvus_app.db.lock
+

@@ -1,11 +1,28 @@
 import pandas as pd
 from .storage_service import storage_service
 from .milvus_service import milvus_service
+from .logging_service import logging_service
 
 class DataFrameService:
     def __init__(self):
         self.dataframes = {}
         self.load_from_storage()
+
+    def log(self, message):
+        if logging_service.get_logging_level("dataframe") == "on":
+            log_file = logging_service.get_log_file("dataframe")
+            if log_file:
+                with open(log_file, "a") as f:
+                    f.write(f"[DataFrameService] {message}\n")
+            else:
+                print(f"[DataFrameService] {message}")
+
+    def health(self):
+        # For now, we'll just check if there are any dataframes loaded
+        if self.dataframes:
+            return "OK"
+        else:
+            return "No dataframes loaded"
 
     def load_from_storage(self):
         state = storage_service.get_latest_state()

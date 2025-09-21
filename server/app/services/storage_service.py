@@ -1,6 +1,7 @@
 import pickle
 import os
 from datetime import datetime
+from .logging_service import logging_service
 
 class StorageService:
     def __init__(self, storage_dir_relative_to_project_root="server/storage"):
@@ -11,6 +12,22 @@ class StorageService:
         self.storage_dir = os.path.join(project_root, storage_dir_relative_to_project_root)
         if not os.path.exists(self.storage_dir):
             os.makedirs(self.storage_dir)
+
+    def log(self, message):
+        if logging_service.get_logging_level("storage") == "on":
+            log_file = logging_service.get_log_file("storage")
+            if log_file:
+                with open(log_file, "a") as f:
+                    f.write(f"[StorageService] {message}\n")
+            else:
+                print(f"[StorageService] {message}")
+
+    def health(self):
+        # For now, we'll just check if the storage directory exists
+        if os.path.exists(self.storage_dir):
+            return "OK"
+        else:
+            return "Error: Storage directory not found"
 
     def save_state(self, state):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")

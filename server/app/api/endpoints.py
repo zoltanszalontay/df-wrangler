@@ -4,6 +4,8 @@ from ..services.dataframe_service import dataframe_service
 from ..services.code_execution_service import code_execution_service
 from ..services.session_service import session_service
 from ..services.milvus_service import milvus_service
+from ..services.logging_service import logging_service
+from ..services.storage_service import storage_service
 import pandas as pd
 import io
 import os
@@ -84,6 +86,37 @@ def handle_command(payload: dict = Body(...)):
             return {"message": "Currently loaded dataframes: " + ", ".join(dataframes.keys())}
         else:
             return {"message": "No dataframes currently loaded."}
+
+    elif command == "set_logging":
+        service_name = args.get("service_name")
+        level = args.get("level")
+        logging_service.set_logging_status(service_name, level)
+        return {"message": f"Logging for {service_name} set to {level}"}
+
+    elif command == "list_services":
+        services = logging_service.config.get("services", [])
+        return {"message": "Available services: " + ", ".join(services)}
+
+    elif command == "service_health":
+        service_name = args.get("service_name")
+        services = {
+            "llm": router.llm_service,
+            "dataframe": dataframe_service,
+            "milvus": milvus_service,
+            "code_execution": code_execution_service,
+            "session": session_service,
+            "storage": storage_service
+        }
+        if service_name == "all":
+            health_status = {}
+            for name, service in services.items():
+                health_status[name] = service.health()
+            return {"message": health_status}
+        elif service_name in services:
+            health_status = services[service_name].health()
+            return {"message": f"Health of {service_name}: {health_status}"}
+        else:
+            return {"error": f"Unknown service: {service_name}"}
 
     elif command == "analyze":
         if not session_service.active:
