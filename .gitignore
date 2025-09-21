@@ -50,4 +50,4 @@ uv.lock
 milvus_app.db
 .milvus_app.db.lock
 client/logs/client.log
-server/logs/llm.logs
+server/logs/llm.log
