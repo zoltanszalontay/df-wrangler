@@ -1,9 +1,10 @@
 from pymilvus import MilvusClient, DataType
 from sentence_transformers import SentenceTransformer
 from .logging_service import logging_service
+from datetime import datetime
 
 class MilvusService:
-    def __init__(self, db_path="./milvus_app.db"):
+    def __init__(self, db_path="server/database/milvus_app.db"):
         self.client = MilvusClient(db_path)
         self.model = SentenceTransformer('all-MiniLM-L6-v2') # A good default model
         self.vector_dim = 384 # Dimension of the embeddings from all-MiniLM-L6-v2
@@ -13,8 +14,8 @@ class MilvusService:
         if logging_service.get_logging_level("milvus") == "on":
             log_file = logging_service.get_log_file("milvus")
             if log_file:
-                with open(log_file, "a") as f:
-                    f.write(f"[MilvusService] {message}\n")
+                with open(log_file, "a", buffering=1) as f: # buffering=1 for line-buffering
+                    f.write(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")} - INFO - [MilvusService] {message}\n")")}````
             else:
                 print(f"[MilvusService] {message}")
 

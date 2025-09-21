@@ -7,6 +7,7 @@ import os
 import uuid # Import uuid for unique filenames
 import urllib.parse # Import urllib.parse for URL encoding
 from .logging_service import logging_service
+from datetime import datetime
 
 class CodeExecutionService:
     def __init__(self):
@@ -23,8 +24,9 @@ class CodeExecutionService:
         if logging_service.get_logging_level("code_execution") == "on":
             log_file = logging_service.get_log_file("code_execution")
             if log_file:
-                with open(log_file, "a") as f:
-                    f.write(f"[CodeExecutionService] {message}\n")
+                with open(log_file, "a", buffering=1) as f: # buffering=1 for line-buffering
+                    f.write(f"{datetime.now().strftime(\"%Y-%m-%d %H:%M:%S,%f\")} - INFO - [CodeExecutionService] {message}
+")")} 2024-02-13 16:30:00,000000 - INFO - [CodeExecutionService] {message}\n")
             else:
                 print(f"[CodeExecutionService] {message}")
 

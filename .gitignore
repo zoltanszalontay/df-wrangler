@@ -49,4 +49,5 @@ df-wrangler.code-workspace
 uv.lock
 milvus_app.db
 .milvus_app.db.lock
-
+client/logs/client.logs
+server/logs/server.logs

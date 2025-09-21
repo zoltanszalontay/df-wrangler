@@ -1,6 +1,8 @@
 from statemachine import StateMachine, State
 from .dataframe_service import dataframe_service
 from .logging_service import logging_service
+from datetime import datetime
+from datetime import datetime
 
 class SessionStateMachine(StateMachine):
     # States
@@ -20,8 +22,8 @@ class SessionStateMachine(StateMachine):
         if logging_service.get_logging_level("session") == "on":
             log_file = logging_service.get_log_file("session")
             if log_file:
-                with open(log_file, "a") as f:
-                    f.write(f"[SessionService] {message}\n")
+                with open(log_file, "a", buffering=1) as f: # buffering=1 for line-buffering                    f.write(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")} - INFO - [SessionService] {message}
+")
             else:
                 print(f"[SessionService] {message}")
 

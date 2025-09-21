@@ -2,6 +2,7 @@ import pandas as pd
 from .storage_service import storage_service
 from .milvus_service import milvus_service
 from .logging_service import logging_service
+from datetime import datetime
 
 class DataFrameService:
     def __init__(self):
@@ -12,8 +13,9 @@ class DataFrameService:
         if logging_service.get_logging_level("dataframe") == "on":
             log_file = logging_service.get_log_file("dataframe")
             if log_file:
-                with open(log_file, "a") as f:
-                    f.write(f"[DataFrameService] {message}\n")
+                with open(log_file, "a", buffering=1) as f: # buffering=1 for line-buffering
+                    f.write(f"{datetime.now().strftime(\"%Y-%m-%d %H:%M:%S,%f\")} - INFO - [DataFrameService] {message}
+")
             else:
                 print(f"[DataFrameService] {message}")
 

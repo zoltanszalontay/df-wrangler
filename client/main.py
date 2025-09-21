@@ -10,7 +10,6 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
 from rich.console import Console
-from rich.logging import RichHandler
 
 # Configure logging
 log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "client.log")
@@ -120,8 +119,7 @@ while True:
             console.print("[blue]Exiting df-wrangler. Goodbye![/blue]")
             break
         elif user_input.lower() == "help":
-            display_help()
-            continue
+            console.print(help_message)
 
         response = requests.post("http://127.0.0.1:8000/command", json={"prompt": user_input})
         response.raise_for_status()
