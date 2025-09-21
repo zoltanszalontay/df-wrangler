@@ -15,10 +15,8 @@ from rich.console import Console
 log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "client.log")
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(log_file_path)
-    ]
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler(log_file_path)],
 )
 
 console = Console()
@@ -119,7 +117,7 @@ while True:
             console.print("[blue]Exiting df-wrangler. Goodbye![/blue]")
             break
         elif user_input.lower() == "help":
-            console.print(help_message)
+            display_help()
 
         response = requests.post("http://127.0.0.1:8000/command", json={"prompt": user_input})
         response.raise_for_status()
@@ -138,17 +136,18 @@ while True:
         elif "plot_url" in server_response and "code" in server_response:
             plot_url = server_response.get("plot_url")
             code_content = server_response.get("code")
-            console.print(f"[green]Your plot is ready. Please open this URL in your browser:[/green]")
+            console.print("[green]Your plot is ready. Please open this URL in your browser:[/green]")
             console.print(f"[bold blue]{plot_url}[/bold blue]")
             console.print("[yellow]Generated Code:[/yellow]")
             console.print(code_content)
         elif "plot_url" in server_response:
+            # TODO: remove duplicate block
             plot_url = server_response.get("plot_url")
-            console.print(f"[green]Your plot is ready. Please open this URL in your browser:[/green]")
+            console.print("[green]Your plot is ready. Please open this URL in your browser:[/green]")
             console.print(f"[bold blue]{plot_url}[/bold blue]")
         elif "download_url" in server_response:
             download_url = server_response.get("download_url")
-            console.print(f"[green]Your file is ready. Please open this URL in your browser to download it:[/green]")
+            console.print("[green]Your file is ready. Please open this URL in your browser to download it:[/green]")
             console.print(f"[bold blue]{download_url}[/bold blue]")
         elif "error" in server_response:
             console.print(f"[red]Error from server: {server_response['error']}[/red]")

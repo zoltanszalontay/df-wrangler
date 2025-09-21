@@ -1,35 +1,69 @@
+// .vscode/launch.json
 {
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Server (uvicorn)",
+      "name": "Server: Uvicorn (reload, debug)",
       "type": "debugpy",
       "request": "launch",
       "python": "${workspaceFolder}/server/.venv/bin/python",
       "module": "uvicorn",
-      "args": ["server.app.main:app", "--reload"],
+      "args": [
+        "server.app.main:app",
+        "--host", "127.0.0.1",
+        "--port", "8000",
+        "--reload"
+      ],
+      "subProcess": true,                // follow the reloader child process so breakpoints bind
+      "justMyCode": true,
+      "cwd": "${workspaceFolder}",
+      "env": { "PYTHONPATH": "${workspaceFolder}" },
+      "console": "integratedTerminal",
+      "jinja": true,
+      // "serverReadyAction": { // auto-detect when uvicorn is ready
+      //  "pattern": "Uvicorn running on (http://\\S+)",
+      //  "uriFormat": "%s",
+      //  "action": "openExternally"
+      // }
+    },
+    {
+      "name": "Server: Uvicorn (no reload, most stable)",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "${workspaceFolder}/server/.venv/bin/python",
+      "module": "uvicorn",
+      "args": [
+        "server.app.main:app",
+        "--host", "127.0.0.1",
+        "--port", "8000"
+      ],
+      "justMyCode": true,
       "cwd": "${workspaceFolder}",
       "env": { "PYTHONPATH": "${workspaceFolder}" },
       "console": "integratedTerminal",
       "jinja": true
     },
     {
-      "name": "Run Client (main.py)",
+      "name": "Client: run client.main",
       "type": "debugpy",
       "request": "launch",
       "python": "${workspaceFolder}/client/.venv/bin/python",
       "module": "client.main",
       "cwd": "${workspaceFolder}",
-      "env": { "PYTHONPATH": "${workspaceFolder}" },
-      "console": "integratedTerminal"
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "API_BASE_URL": "http://127.0.0.1:8000"
+      },
+      "console": "integratedTerminal",
+      "justMyCode": true
     }
   ],
   "compounds": [
     {
       "name": "Run Client + Server",
       "configurations": [
-        "Run Server (uvicorn)",
-        "Run Client (main.py)"
+        "Server: Uvicorn (reload, debug)",
+        "Client: run client.main"
       ],
       "stopAll": true
     }

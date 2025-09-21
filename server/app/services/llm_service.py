@@ -8,6 +8,7 @@ from .code_execution_service import code_execution_service
 from .milvus_service import milvus_service
 from .logging_service import logging_service
 
+
 class LLMService:
     def __init__(self, config):
         self.config = config
@@ -21,8 +22,8 @@ class LLMService:
         if logging_service.get_logging_level("llm") == "on":
             log_file = logging_service.get_log_file("llm")
             if log_file:
-                with open(log_file, "a", buffering=1) as f: # buffering=1 for line-buffering
-                    f.write(f"{datetime.now().strftime(\%Y-%m-%d %H:%M:%S,%f\")} - INFO - [LLMService] {message}")
+                with open(log_file, "a", buffering=1) as f:  # buffering=1 for line-buffering
+                    f.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')} - INFO - [LLMService] {message}\n")
             else:
                 print(f"[LLMService] {message}")
 
@@ -108,7 +109,7 @@ Your response:
         full_prompt = self._get_classification_prompt(prompt)
         response = self.client.chat.completions.create(
             model=self.model,
-            messages=[{'role': 'user', 'content': full_prompt}],
+            messages=[{"role": "user", "content": full_prompt}],
             temperature=0.0,  # We want deterministic output
         )
 
@@ -128,7 +129,7 @@ Your response:
         # Search for the most relevant dataframe schema
         search_results = milvus_service.search_dataframe_schemas(prompt)
         if search_results:
-            return search_results[0]['schema_text']
+            return search_results[0]["schema_text"]
 
         # Fallback to the old logic if no relevant schema is found
         df_name = None
@@ -154,7 +155,7 @@ Your response:
 """
         return context
 
-    def generate_code(self, prompt: str) -> (bool, str):
+    def generate_code(self, prompt: str, return_code: bool = False) -> dict:
         """
         Generates Python/pandas code from a user prompt.
         """
@@ -217,6 +218,7 @@ Your task is to generate a single block of Python code to answer the user's prom
     *   **Example (Correlation):**
         ```python
         import numpy as np
+        import statsmodels.api as sm
         numeric_df = df.select_dtypes(include=np.number)
         correlation_matrix = numeric_df.corr()
         ```
@@ -305,35 +307,35 @@ Your task is to generate a single block of Python code to answer the user's prom
 
 Now, let's get to work! The user is waiting for your amazing code.
 """
-        
+
         system_prompt = f"{prompt_template}\n\n{dataframe_context}{examples_context}{history_context}\n\n"
 
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[
                 {
-                    'role': 'system',
-                    'content': system_prompt,
+                    "role": "system",
+                    "content": system_prompt,
                 },
                 {
-                    'role': 'user',
-                    'content': prompt,
-                }
-            ]
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
         )
         raw_code = response.choices[0].message.content
         self.log(f"--- Raw LLM Response ---\n{raw_code}\n---")
-        
-        match = re.search(r'```(?:python\n)?(.*?)(?:```|$)', raw_code, re.DOTALL)
+
+        match = re.search(r"```(?:python\n)?(.*?)(?:```|$)", raw_code, re.DOTALL)
         if match:
             code = match.group(1).strip()
             code = code.replace("dataframeservice", "dataframe_service")
             code = code.replace(
                 "dataframe_service.get_all_dataframes().keys()", "list(dataframe_service.get_all_dataframes().keys())"
             )
-            return (True, code.strip())
+            return {"code": code, "message": ""}
         else:
-            return (False, raw_code)
+            return {"code": "", "message": raw_code}
 
     def health(self):
         # For now, we'll just check if the OpenAI API key is set

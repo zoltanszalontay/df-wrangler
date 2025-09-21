@@ -3,19 +3,20 @@ from sentence_transformers import SentenceTransformer
 from .logging_service import logging_service
 from datetime import datetime
 
+
 class MilvusService:
     def __init__(self, db_path="server/database/milvus_app.db"):
         self.client = MilvusClient(db_path)
-        self.model = SentenceTransformer('all-MiniLM-L6-v2') # A good default model
-        self.vector_dim = 384 # Dimension of the embeddings from all-MiniLM-L6-v2
+        self.model = SentenceTransformer("all-MiniLM-L6-v2")  # A good default model
+        self.vector_dim = 384  # Dimension of the embeddings from all-MiniLM-L6-v2
         self.create_collections()
 
     def log(self, message):
         if logging_service.get_logging_level("milvus") == "on":
             log_file = logging_service.get_log_file("milvus")
             if log_file:
-                with open(log_file, "a", buffering=1) as f: # buffering=1 for line-buffering
-                    f.write(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")} - INFO - [MilvusService] {message}\n")")}````
+                with open(log_file, "a", buffering=1) as f:  # buffering=1 for line-buffering
+                    f.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')} - INFO - [MilvusService] {message}")
             else:
                 print(f"[MilvusService] {message}")
 
@@ -47,12 +48,7 @@ class MilvusService:
             self.client.create_collection(collection_name="code_examples", schema=schema)
 
             index_params = self.client.prepare_index_params()
-            index_params.add_index(
-                field_name="vector",
-                index_type="IVF_FLAT",
-                metric_type="L2",
-                params={"nlist": 128}
-            )
+            index_params.add_index(field_name="vector", index_type="IVF_FLAT", metric_type="L2", params={"nlist": 128})
             self.client.create_index(collection_name="code_examples", index_params=index_params)
 
         # Schema for conversation history
@@ -69,12 +65,7 @@ class MilvusService:
             self.client.create_collection(collection_name="conversation_history", schema=schema)
 
             index_params = self.client.prepare_index_params()
-            index_params.add_index(
-                field_name="vector",
-                index_type="IVF_FLAT",
-                metric_type="L2",
-                params={"nlist": 128}
-            )
+            index_params.add_index(field_name="vector", index_type="IVF_FLAT", metric_type="L2", params={"nlist": 128})
             self.client.create_index(collection_name="conversation_history", index_params=index_params)
 
         # Schema for dataframe schemas
@@ -90,12 +81,7 @@ class MilvusService:
             self.client.create_collection(collection_name="dataframe_schemas", schema=schema)
 
             index_params = self.client.prepare_index_params()
-            index_params.add_index(
-                field_name="vector",
-                index_type="IVF_FLAT",
-                metric_type="L2",
-                params={"nlist": 128}
-            )
+            index_params.add_index(field_name="vector", index_type="IVF_FLAT", metric_type="L2", params={"nlist": 128})
             self.client.create_index(collection_name="dataframe_schemas", index_params=index_params)
 
     def add_example(self, example_text: str):
@@ -112,12 +98,9 @@ class MilvusService:
         """
         query_embedding = self.model.encode(query_text)
         results = self.client.search(
-            collection_name="code_examples",
-            data=[query_embedding],
-            limit=top_k,
-            output_fields=["example_text"]
+            collection_name="code_examples", data=[query_embedding], limit=top_k, output_fields=["example_text"]
         )
-        return [res['entity']['example_text'] for res in results[0]]
+        return [res["entity"]["example_text"] for res in results[0]]
 
     def add_conversation_turn(self, prompt: str, code: str, result: str):
         """
@@ -136,9 +119,9 @@ class MilvusService:
             collection_name="conversation_history",
             data=[query_embedding],
             limit=top_k,
-            output_fields=["prompt", "code", "result"]
+            output_fields=["prompt", "code", "result"],
         )
-        return [res['entity'] for res in results[0]]
+        return [res["entity"] for res in results[0]]
 
     def add_dataframe_schema(self, df_name: str, schema_text: str):
         """
@@ -157,8 +140,9 @@ class MilvusService:
             collection_name="dataframe_schemas",
             data=[query_embedding],
             limit=top_k,
-            output_fields=["df_name", "schema_text"]
+            output_fields=["df_name", "schema_text"],
         )
-        return [res['entity'] for res in results[0]]
+        return [res["entity"] for res in results[0]]
+
 
 milvus_service = MilvusService()

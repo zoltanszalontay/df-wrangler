@@ -1,5 +1,6 @@
 [project]
 name = "df-wrangler-server"
+requires-python = ">=3.11"
 version = "0.1.0"
 
 dependencies = [
@@ -13,4 +14,34 @@ dependencies = [
     "python-multipart",
     "openai",
     "seaborn",
+    "statsmodels",
+    "charset-normalizer==3.4.3",
+    "filelock==3.19.1",
+    "fsspec==2025.9.0",
+    "grpcio==1.75.0",
+    "hf-xet==1.1.10",
+    "huggingface-hub==0.35.0",
+    "jinja2==3.1.6",
+    "joblib==1.5.2",
+    "markupsafe==3.0.2",
+    "milvus-lite==2.5.1",
+    "mpmath==1.3.0",
+    "networkx==3.5",
+    "patsy==1.0.1",
+    "protobuf==6.32.1",
+    "pymilvus==2.6.2",
+    "python-statemachine==2.5.0",
+    "regex==2025.9.18",
+    "requests==2.32.5",
+    "safetensors==0.6.2",
+    "scikit-learn==1.7.2",
+    "sentence-transformers==5.1.0",
+    "setuptools==80.9.0",
+    "sympy==1.14.0",
+    "threadpoolctl==3.6.0",
+    "tokenizers==0.22.1",
+    "torch==2.8.0",
+    "transformers==4.56.2",
+    "ujson==5.11.0",
+    "urllib3==2.5.0",
 ]

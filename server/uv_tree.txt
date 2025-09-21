@@ -1,0 +1,155 @@
+df-wrangler-server v0.1.0
+├── charset-normalizer v3.4.3
+├── fastapi v0.116.2
+│   ├── pydantic v2.11.9
+│   │   ├── annotated-types v0.7.0
+│   │   ├── pydantic-core v2.33.2
+│   │   │   └── typing-extensions v4.15.0
+│   │   ├── typing-extensions v4.15.0
+│   │   └── typing-inspection v0.4.1
+│   │       └── typing-extensions v4.15.0
+│   ├── starlette v0.48.0
+│   │   └── anyio v4.10.0
+│   │       ├── idna v3.10
+│   │       └── sniffio v1.3.1
+│   └── typing-extensions v4.15.0
+├── filelock v3.19.1
+├── fsspec v2025.9.0
+├── grpcio v1.75.0
+│   └── typing-extensions v4.15.0
+├── hf-xet v1.1.10
+├── huggingface-hub v0.35.0
+│   ├── filelock v3.19.1
+│   ├── fsspec v2025.9.0
+│   ├── hf-xet v1.1.10
+│   ├── packaging v25.0
+│   ├── pyyaml v6.0.2
+│   ├── requests v2.32.5
+│   │   ├── certifi v2025.8.3
+│   │   ├── charset-normalizer v3.4.3
+│   │   ├── idna v3.10
+│   │   └── urllib3 v2.5.0
+│   ├── tqdm v4.67.1
+│   └── typing-extensions v4.15.0
+├── hydra-core v1.3.2
+│   ├── antlr4-python3-runtime v4.9.3
+│   ├── omegaconf v2.3.0
+│   │   ├── antlr4-python3-runtime v4.9.3
+│   │   └── pyyaml v6.0.2
+│   └── packaging v25.0
+├── jinja2 v3.1.6
+│   └── markupsafe v3.0.2
+├── joblib v1.5.2
+├── markupsafe v3.0.2
+├── milvus-lite v2.5.1
+│   └── tqdm v4.67.1
+├── mpmath v1.3.0
+├── networkx v3.5
+├── omegaconf v2.3.0 (*)
+├── openai v1.108.0
+│   ├── anyio v4.10.0 (*)
+│   ├── distro v1.9.0
+│   ├── httpx v0.28.1
+│   │   ├── anyio v4.10.0 (*)
+│   │   ├── certifi v2025.8.3
+│   │   ├── httpcore v1.0.9
+│   │   │   ├── certifi v2025.8.3
+│   │   │   └── h11 v0.16.0
+│   │   └── idna v3.10
+│   ├── jiter v0.11.0
+│   ├── pydantic v2.11.9 (*)
+│   ├── sniffio v1.3.1
+│   ├── tqdm v4.67.1
+│   └── typing-extensions v4.15.0
+├── pandas v2.3.2
+│   ├── numpy v2.3.3
+│   ├── python-dateutil v2.9.0.post0
+│   │   └── six v1.17.0
+│   ├── pytz v2025.2
+│   └── tzdata v2025.2
+├── patsy v1.0.1
+│   └── numpy v2.3.3
+├── protobuf v6.32.1
+├── pymilvus v2.6.2
+│   ├── grpcio v1.75.0 (*)
+│   ├── pandas v2.3.2 (*)
+│   ├── protobuf v6.32.1
+│   ├── python-dotenv v1.1.1
+│   ├── setuptools v80.9.0
+│   └── ujson v5.11.0
+├── python-dotenv v1.1.1
+├── python-multipart v0.0.20
+├── python-statemachine v2.5.0
+├── regex v2025.9.18
+├── requests v2.32.5 (*)
+├── rich v14.1.0
+│   ├── markdown-it-py v4.0.0
+│   │   └── mdurl v0.1.2
+│   └── pygments v2.19.2
+├── safetensors v0.6.2
+├── scikit-learn v1.7.2
+│   ├── joblib v1.5.2
+│   ├── numpy v2.3.3
+│   ├── scipy v1.16.2
+│   │   └── numpy v2.3.3
+│   └── threadpoolctl v3.6.0
+├── seaborn v0.13.2
+│   ├── matplotlib v3.10.6
+│   │   ├── contourpy v1.3.3
+│   │   │   └── numpy v2.3.3
+│   │   ├── cycler v0.12.1
+│   │   ├── fonttools v4.60.0
+│   │   ├── kiwisolver v1.4.9
+│   │   ├── numpy v2.3.3
+│   │   ├── packaging v25.0
+│   │   ├── pillow v11.3.0
+│   │   ├── pyparsing v3.2.4
+│   │   └── python-dateutil v2.9.0.post0 (*)
+│   ├── numpy v2.3.3
+│   └── pandas v2.3.2 (*)
+├── sentence-transformers v5.1.0
+│   ├── huggingface-hub v0.35.0 (*)
+│   ├── pillow v11.3.0
+│   ├── scikit-learn v1.7.2 (*)
+│   ├── scipy v1.16.2 (*)
+│   ├── torch v2.8.0
+│   │   ├── filelock v3.19.1
+│   │   ├── fsspec v2025.9.0
+│   │   ├── jinja2 v3.1.6 (*)
+│   │   ├── networkx v3.5
+│   │   ├── setuptools v80.9.0
+│   │   ├── sympy v1.14.0
+│   │   │   └── mpmath v1.3.0
+│   │   └── typing-extensions v4.15.0
+│   ├── tqdm v4.67.1
+│   ├── transformers v4.56.2
+│   │   ├── filelock v3.19.1
+│   │   ├── huggingface-hub v0.35.0 (*)
+│   │   ├── numpy v2.3.3
+│   │   ├── packaging v25.0
+│   │   ├── pyyaml v6.0.2
+│   │   ├── regex v2025.9.18
+│   │   ├── requests v2.32.5 (*)
+│   │   ├── safetensors v0.6.2
+│   │   ├── tokenizers v0.22.1
+│   │   │   └── huggingface-hub v0.35.0 (*)
+│   │   └── tqdm v4.67.1
+│   └── typing-extensions v4.15.0
+├── setuptools v80.9.0
+├── statsmodels v0.14.5
+│   ├── numpy v2.3.3
+│   ├── packaging v25.0
+│   ├── pandas v2.3.2 (*)
+│   ├── patsy v1.0.1 (*)
+│   └── scipy v1.16.2 (*)
+├── sympy v1.14.0 (*)
+├── threadpoolctl v3.6.0
+├── tokenizers v0.22.1 (*)
+├── torch v2.8.0 (*)
+├── transformers v4.56.2 (*)
+├── ujson v5.11.0
+├── urllib3 v2.5.0
+└── uvicorn v0.35.0
+    ├── click v8.3.0
+    └── h11 v0.16.0
+(*) Package tree already displayed

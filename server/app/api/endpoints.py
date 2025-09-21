@@ -123,19 +123,19 @@ def handle_command(payload: dict = Body(...)):
             return {"error": "No dataframes loaded. Please upload a dataframe first."}
         
         analysis_prompt = args.get("prompt", user_prompt)
-        is_code, content = llm_service.generate_code(analysis_prompt)
+        llm_response = llm_service.generate_code(analysis_prompt)
 
-        if is_code:
-            result = code_execution_service.execute(content, dataframe_service)
-            milvus_service.add_conversation_turn(analysis_prompt, content, str(result))
+        if llm_response["code"]:
+            result = code_execution_service.execute(llm_response["code"], dataframe_service)
+            milvus_service.add_conversation_turn(analysis_prompt, llm_response["code"], str(result))
             # Check if the result is a dictionary containing a plot_url
             if isinstance(result, dict) and "plot_url" in result:
-                return {"plot_url": result["plot_url"], "code": content}
+                return {"plot_url": result["plot_url"], "code": llm_response["code"]}
             else:
-                return {"result": str(result), "code": content}
+                return {"result": str(result), "code": llm_response["code"]}
         else:
-            milvus_service.add_conversation_turn(analysis_prompt, "", content)
-            return {"message": content}
+            milvus_service.add_conversation_turn(analysis_prompt, "", llm_response["message"])
+            return {"message": llm_response["message"]}
 
     else:
         return {"error": "Unknown command"}, 400

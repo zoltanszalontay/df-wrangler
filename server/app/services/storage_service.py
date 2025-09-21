@@ -2,7 +2,7 @@ import pickle
 import os
 from datetime import datetime
 from .logging_service import logging_service
-from .logging_service import logging_service
+
 
 class StorageService:
     def __init__(self, storage_dir_relative_to_project_root="server/storage"):
@@ -18,9 +18,8 @@ class StorageService:
         if logging_service.get_logging_level("storage") == "on":
             log_file = logging_service.get_log_file("storage")
             if log_file:
-                with open(log_file, "a", buffering=1) as f: # buffering=1 for line-buffering
-                    f.write(f"{datetime.now().strftime(\"%Y-%m-%d %H:%M:%S,%f\")} - INFO - [StorageService] {message}
-")")}``
+                with open(log_file, "a", buffering=1) as f:  # buffering=1 for line-buffering
+                    f.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')} - INFO - [StorageService] {message}\n")
             else:
                 print(f"[StorageService] {message}")
 
@@ -38,10 +37,7 @@ class StorageService:
             pickle.dump(state, f)
 
     def get_latest_state(self):
-        files = sorted(
-            [f for f in os.listdir(self.storage_dir) if f.endswith(".pkl")], 
-            reverse=True
-        )
+        files = sorted([f for f in os.listdir(self.storage_dir) if f.endswith(".pkl")], reverse=True)
         if not files:
             return None
         file_path = os.path.join(self.storage_dir, files[0])
@@ -52,14 +48,12 @@ class StorageService:
             return pickle.load(f)
 
     def pop_state(self):
-        files = sorted(
-            [f for f in os.listdir(self.storage_dir) if f.endswith(".pkl")],
-            reverse=True
-        )
+        files = sorted([f for f in os.listdir(self.storage_dir) if f.endswith(".pkl")], reverse=True)
         if len(files) < 2:
-            return None # Cannot pop the initial state
+            return None  # Cannot pop the initial state
         file_to_remove = os.path.join(self.storage_dir, files[0])
         os.remove(file_to_remove)
         return self.get_latest_state()
+
 
 storage_service = StorageService()

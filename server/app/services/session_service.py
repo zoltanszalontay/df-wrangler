@@ -2,12 +2,12 @@ from statemachine import StateMachine, State
 from .dataframe_service import dataframe_service
 from .logging_service import logging_service
 from datetime import datetime
-from datetime import datetime
+
 
 class SessionStateMachine(StateMachine):
     # States
-    empty = State('Empty', initial=True)
-    active = State('Active')
+    empty = State("Empty", initial=True)
+    active = State("Active")
 
     # Transitions
     load_dataframe = empty.to(active) | active.to.itself()
@@ -22,8 +22,9 @@ class SessionStateMachine(StateMachine):
         if logging_service.get_logging_level("session") == "on":
             log_file = logging_service.get_log_file("session")
             if log_file:
-                with open(log_file, "a", buffering=1) as f: # buffering=1 for line-buffering                    f.write(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")} - INFO - [SessionService] {message}
-")
+                with open(log_file, "a", buffering=1) as f:
+                    # buffering=1 for line-buffering
+                    f.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')} - INFO - [SessionService] {message}")
             else:
                 print(f"[SessionService] {message}")
 
@@ -39,5 +40,6 @@ class SessionStateMachine(StateMachine):
             self.current_state = self.active
         else:
             self.current_state = self.empty
+
 
 session_service = SessionStateMachine()
