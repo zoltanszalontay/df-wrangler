@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Body
 from fastapi.responses import StreamingResponse
 from ..services.dataframe_service import dataframe_service
 from ..services.code_execution_service import code_execution_service
+from ..services.session_service import session_service
 import pandas as pd
 import io
 import os
@@ -46,7 +47,9 @@ def handle_command(payload: dict = Body(...)):
 
     elif command == "pop":
         state = dataframe_service.pop_state()
-        if state:
+        if state is not None:
+            if not state:
+                session_service.pop_to_empty_state()
             return {"message": "State popped successfully."}
         else:
             return {"message": "No previous state to pop to."}
@@ -57,6 +60,8 @@ def handle_command(payload: dict = Body(...)):
             return {"error": "DataFrame name is required for removal."}, 400
 
         if dataframe_service.remove_dataframe(df_name):
+            if not dataframe_service.get_all_dataframes():
+                session_service.remove_last_dataframe()
             return {"message": f"DataFrame '{df_name}' removed successfully."}
         else:
             return {"error": f"DataFrame '{df_name}' not found."}
@@ -80,6 +85,9 @@ def handle_command(payload: dict = Body(...)):
             return {"message": "No dataframes currently loaded."}
 
     elif command == "analyze":
+        if not session_service.active:
+            return {"error": "No dataframes loaded. Please upload a dataframe first."}
+        
         analysis_prompt = args.get("prompt", user_prompt)
         is_code, content = llm_service.generate_code(analysis_prompt)
 
@@ -106,6 +114,7 @@ def execute_upload(file: UploadFile = File(...)):
         contents = file.file.read()
         df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
         dataframe_service.add_dataframe(df_name, df)
+        session_service.load_dataframe()
         return {"message": f"DataFrame '{df_name}' created successfully."}
     except Exception as e:
         return {"error": f"Failed to upload and process file: {e}"}, 500
@@ -133,6 +142,8 @@ def remove_dataframe(df_name: str):
     Removes a dataframe.
     """
     if dataframe_service.remove_dataframe(df_name):
+        if not dataframe_service.get_all_dataframes():
+            session_service.remove_last_dataframe()
         return {"message": f"DataFrame '{df_name}' removed successfully."}
     else:
         return {"error": f"DataFrame '{df_name}' not found."}

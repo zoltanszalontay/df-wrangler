@@ -68,26 +68,7 @@ class CodeExecutionService:
             else:
                 result = global_vars.get("result")
                 if isinstance(result, (pd.Series, pd.DataFrame)):
-                    fig = None
-                    try:
-                        fig, ax = plt.subplots()
-                        kind = 'bar' if isinstance(result, pd.Series) else 'line'
-                        result.plot(ax=ax, kind=kind)
-                        ax.set_title("Auto-generated Plot")
-                        plt.tight_layout()
-
-                        plot_filename = f"plot_{uuid.uuid4().hex}.jpg"
-                        plot_filepath = os.path.join(self.plots_dir, plot_filename)
-                        fig.savefig(plot_filepath)
-                        
-                        encoded_plot_filename = urllib.parse.quote(plot_filename)
-                        plot_url = f"http://localhost:8000/plots/{encoded_plot_filename}"
-                        final_result = {"plot_url": plot_url}
-                    except Exception as e:
-                        final_result = result
-                    finally:
-                        if fig:
-                            plt.close(fig)
+                    final_result = result
                 else:
                     final_result = result if result is not None else "Code executed successfully, but no result was returned."
             
@@ -96,8 +77,10 @@ class CodeExecutionService:
                 self.results_history.pop(0)
 
             # If the result is a pandas DataFrame, return its string representation
-            if isinstance(final_result, pd.DataFrame):
+            if isinstance(final_result, (pd.DataFrame, pd.Series)):
                 return final_result.to_string()
+            elif isinstance(final_result, list):
+                return "\n".join(map(str, final_result))
             else:
                 return final_result
 

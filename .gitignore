@@ -46,3 +46,4 @@ df-wrangler.code-workspace
 .DS_Store
 /server/.env
 uv.lock
+milvus_app.db
