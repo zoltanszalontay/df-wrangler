@@ -17,7 +17,6 @@
       "subProcess": true,                // follow the reloader child process so breakpoints bind
       "justMyCode": true,
       "cwd": "${workspaceFolder}",
-      "env": { "PYTHONPATH": "${workspaceFolder}" },
       "console": "integratedTerminal",
       "jinja": true,
       // "serverReadyAction": { // auto-detect when uvicorn is ready
@@ -39,7 +38,6 @@
       ],
       "justMyCode": true,
       "cwd": "${workspaceFolder}",
-      "env": { "PYTHONPATH": "${workspaceFolder}" },
       "console": "integratedTerminal",
       "jinja": true
     },
@@ -51,7 +49,6 @@
       "module": "client.main",
       "cwd": "${workspaceFolder}",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}",
         "API_BASE_URL": "http://127.0.0.1:8000"
       },
       "console": "integratedTerminal",
