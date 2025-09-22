@@ -12,7 +12,22 @@ from prompt_toolkit.keys import Keys
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.syntax import Syntax
+from rich.text import Text
 import pyperclip
+from datetime import datetime
+
+def print_generated_code_header():
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    left_part = "[yellow]Generated Code: (Press Ctrl+Y to copy code)[/yellow]"
+    right_part = f"[dim yellow]{timestamp}[/dim yellow]"
+    left_plain_text_length = len(console.render_str(left_part, style=False))
+    right_plain_text_length = len(console.render_str(right_part, style=False))
+    current_console_width = console.width
+    padding_needed = current_console_width - left_plain_text_length - right_plain_text_length
+    if padding_needed < 1:
+        padding_needed = 1
+    final_string = f"{left_part}{' ' * padding_needed}{right_part}"
+    console.print(f"\n{final_string}")
 
 # Global variable to store the last generated code
 last_generated_code = ""
@@ -164,7 +179,7 @@ while True:
             last_generated_code = code_content # Store raw code
             console.print("[green]Your plot is ready. Please open this URL in your browser:[/green]")
             console.print(f"[bold blue]{plot_url}[/bold blue]")
-            console.print("\n[yellow]Generated Code: (Press Ctrl+Y to copy code)[/yellow]")
+            print_generated_code_header()
             syntax = Syntax(code_content, "python", theme="monokai", line_numbers=True)
             console.print(syntax)
         elif "plot_url" in server_response:
@@ -185,7 +200,7 @@ while True:
                 code_content = server_response.get("code") # Get raw code
                 formatted_code_content = server_response.get("formatted_code")
                 last_generated_code = code_content # Store raw code
-                console.print("\n[yellow]Generated Code: (Press Ctrl+Y to copy code)[/yellow]")
+                print_generated_code_header()
                 syntax = Syntax(code_content, "python", theme="monokai", line_numbers=True)
                 console.print(syntax)
             elif "code" in server_response: # Fallback if formatted_code is not present

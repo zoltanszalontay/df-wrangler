@@ -29,3 +29,7 @@ services:
 - code_execution
 - session
 - storage
+code_execution:
+  cpu_limit: 5
+  mem_limit: 1000000000
+  timeout: 30

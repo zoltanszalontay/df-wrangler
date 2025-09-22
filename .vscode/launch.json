@@ -17,7 +17,7 @@
       "subProcess": true,                // follow the reloader child process so breakpoints bind
       "justMyCode": true,
       "cwd": "${workspaceFolder}",
-      "env": { "PYTHONPATH": "${workspaceFolder}" },
+      "env": { "PYTHONPATH": "${workspaceFolder}", "TOKENIZERS_PARALLELISM": "false" },
       "console": "integratedTerminal",
       "jinja": true,
       // "serverReadyAction": { // auto-detect when uvicorn is ready
@@ -39,7 +39,7 @@
       ],
       "justMyCode": true,
       "cwd": "${workspaceFolder}",
-      "env": { "PYTHONPATH": "${workspaceFolder}" },
+      "env": { "PYTHONPATH": "${workspaceFolder}", "TOKENIZERS_PARALLELISM": "false" },
       "console": "integratedTerminal",
       "jinja": true
     },

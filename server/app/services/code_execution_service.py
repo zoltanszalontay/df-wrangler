@@ -7,12 +7,16 @@ import matplotlib.pyplot as plt
 import os
 import uuid  # Import uuid for unique filenames
 import urllib.parse  # Import urllib.parse for URL encoding
+import pickle
+import shutil
 from .logging_service import logging_service
 from datetime import datetime
+from . import safe_exec
 
 
 class CodeExecutionService:
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
         self.results_history = []
         current_file_dir = os.path.dirname(os.path.abspath(__file__))
         app_dir = os.path.dirname(current_file_dir)
@@ -37,76 +41,64 @@ class CodeExecutionService:
         # For now, this service is always considered healthy
         return "OK"
 
-    def execute(self, code: str, dataframe_service) -> any:
+    def execute(self, code: str, dataframe_service, df_name: str = None) -> any:
         """
         Executes the given Python code in a restricted environment.
         """
-        # Create a restricted global environment
-        global_vars = {
-            "dataframe_service": dataframe_service,
-            "pd": pd,
-            "np": np,
-            "plt": plt,
-            "results_history": self.results_history,
-            "last_result": self.results_history[-1] if self.results_history else None,
-            "plots_dir": self.plots_dir,
-        }
+        original_df_name = df_name # Store the original df_name
+        df = None
+        if df_name:
+            df = dataframe_service.get_dataframe(df_name)
+        else:
+            all_dfs = dataframe_service.get_all_dataframes()
+            if all_dfs:
+                original_df_name = list(all_dfs.keys())[0] # Get the name of the first dataframe
+                df = all_dfs[original_df_name]
 
-        try:
-            # Get the number of figures before execution
-            initial_fignums = plt.get_fignums()
+        if df is None:
+            # Create an empty dataframe if none are loaded
+            df = pd.DataFrame()
+        df_pickle = pickle.dumps(df)
 
-            # Execute the code
-            exec(code, global_vars)
+        execution_result = safe_exec.run_user_code(code, df_pickle, self.config)
 
-            # Check if any new figures were created or existing ones modified
-            current_fignums = plt.get_fignums()
+        if not execution_result["ok"]:
+            error_message = execution_result.get('err') or execution_result.get('error')
+            return f"Error executing code: {error_message}"
 
-            plot_url = None
-            if current_fignums:  # If there are any open figures
-                # Assuming the last created figure is the one we want to save
-                # This might need refinement if multiple plots are generated
-                fig = plt.figure(current_fignums[-1])
+        final_result = None
+        plot_urls = []
 
-                # Generate a unique filename for the plot
-                plot_filename = f"plot_{uuid.uuid4().hex}.jpg"
-                plot_filepath = os.path.join(self.plots_dir, plot_filename)
-
-                # Save the plot
-                fig.savefig(plot_filepath)
-                plt.close(fig)  # Close the figure to free memory
-
-                # Construct the URL for the plot
-                # Assuming the server is running on localhost:8000 and static files are served from /plots
+        if execution_result.get("plots"):
+            for plot_path in execution_result["plots"]:
+                plot_filename = os.path.basename(plot_path)
+                new_plot_path = os.path.join(self.plots_dir, plot_filename)
+                shutil.move(plot_path, new_plot_path)
                 encoded_plot_filename = urllib.parse.quote(plot_filename)
-                plot_url = f"http://localhost:8000/plots/{encoded_plot_filename}"
+                plot_urls.append(f"http://localhost:8000/plots/{encoded_plot_filename}")
 
-            final_result = None
-            if plot_url:
-                final_result = {"plot_url": plot_url}
+        if plot_urls:
+            final_result = {"plot_url": plot_urls[0]} # Support multiple plots in the future
+        else:
+            result = execution_result.get("result")
+            if isinstance(result, (pd.Series, pd.DataFrame)):
+                final_result = result
+                # Update the dataframe in dataframe_service if the user code returned a dataframe
+                if original_df_name:
+                    dataframe_service.set_dataframe(original_df_name, final_result)
             else:
-                result = global_vars.get("result")
-                if isinstance(result, (pd.Series, pd.DataFrame)):
-                    final_result = result
-                else:
-                    final_result = (
-                        result if result is not None else "Code executed successfully, but no result was returned."
-                    )
+                final_result = (
+                    result if result is not None else "Code executed successfully, but no result was returned."
+                )
 
-            self.results_history.append(final_result)
-            if len(self.results_history) > 10:  # Keep the last 10 results
-                self.results_history.pop(0)
+        self.results_history.append(final_result)
+        if len(self.results_history) > 10:  # Keep the last 10 results
+            self.results_history.pop(0)
 
-            # If the result is a pandas DataFrame, return its string representation
-            if isinstance(final_result, (pd.DataFrame, pd.Series)):
-                return final_result.to_string()
-            elif isinstance(final_result, list):
-                return "\n".join(map(str, final_result))
-            else:
-                return final_result
-
-        except Exception as e:
-            return f"Error executing code: {e}"
-
-
-code_execution_service = CodeExecutionService()
+        # If the result is a pandas DataFrame, return its string representation
+        if isinstance(final_result, (pd.DataFrame, pd.Series)):
+            return final_result.to_string()
+        elif isinstance(final_result, list):
+            return "\n".join(map(str, final_result))
+        else:
+            return final_result

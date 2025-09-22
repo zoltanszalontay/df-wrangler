@@ -17,13 +17,17 @@ def create_fastapi_app() -> FastAPI:
     from .services.llm_service import LLMService
     llm_service_instance = LLMService(config=cfg)
 
-    # Import endpoints after llm_service_instance is created
+    from .services.code_execution_service import CodeExecutionService
+    code_execution_service_instance = CodeExecutionService(config=cfg.code_execution)
+
+    # Import endpoints after services are created
     from .api import endpoints
 
     fastapi_app = FastAPI()
 
-    # Pass the llm_service_instance to the endpoints router
+    # Pass the service instances to the endpoints router
     endpoints.router.llm_service = llm_service_instance
+    endpoints.router.code_execution_service = code_execution_service_instance
     fastapi_app.include_router(endpoints.router)
 
     # Mount static files for plots

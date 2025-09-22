@@ -1,7 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Body
 from fastapi.responses import StreamingResponse
 from ..services.dataframe_service import dataframe_service
-from ..services.code_execution_service import code_execution_service
 from ..services.session_service import session_service
 from ..services.milvus_service import milvus_service
 from ..services.logging_service import logging_service
@@ -19,8 +18,9 @@ def handle_command(payload: dict = Body(...)):
     if not user_prompt:
         return {"error": "Prompt cannot be empty"}, 400
 
-    # Access llm_service from the router object
+    # Access services from the router object
     llm_service = router.llm_service
+    code_execution_service = router.code_execution_service
 
     # 1. Classify the command
     classified_command = llm_service.classify_and_extract_command(user_prompt)
@@ -126,7 +126,7 @@ def handle_command(payload: dict = Body(...)):
         llm_response = llm_service.generate_code(analysis_prompt)
 
         if llm_response["code"]:
-            result = code_execution_service.execute(llm_response["code"], dataframe_service)
+            result = code_execution_service.execute(llm_response["code"], dataframe_service, llm_response.get("df_name"))
             milvus_service.add_conversation_turn(analysis_prompt, llm_response["code"], str(result))
             # Check if the result is a dictionary containing a plot_url
             if isinstance(result, dict) and "plot_url" in result:

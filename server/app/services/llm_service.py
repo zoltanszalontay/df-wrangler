@@ -4,7 +4,6 @@ import json
 import re
 from datetime import datetime
 from .dataframe_service import dataframe_service
-from .code_execution_service import code_execution_service
 from .milvus_service import milvus_service
 from .logging_service import logging_service
 
@@ -118,18 +117,21 @@ Your response:
         except (json.JSONDecodeError, KeyError, IndexError):
             return {"command": "analyze", "args": {"prompt": prompt}}
 
-    def _get_dataframe_context(self, prompt: str) -> str:
+    def _get_dataframe_context(self, prompt: str) -> tuple[str, str]:
         """
         Get the context of the dataframe mentioned in the prompt.
         """
         df_names = list(dataframe_service.get_all_dataframes().keys())
         if not df_names:
-            return ""
+            return "", None
 
         # Search for the most relevant dataframe schema
         search_results = milvus_service.search_dataframe_schemas(prompt)
         if search_results:
-            return search_results[0]["schema_text"]
+            # Extract df_name from schema_text
+            match = re.search(r"DataFrame: (\w+)", search_results[0]["schema_text"])
+            df_name = match.group(1) if match else None
+            return search_results[0]["schema_text"], df_name
 
         # Fallback to the old logic if no relevant schema is found
         df_name = None
@@ -143,7 +145,7 @@ Your response:
 
         df = dataframe_service.get_dataframe(df_name)
         if df is None:
-            return ""
+            return "", None
 
         context = f"""Here is the context for the dataframe `{df_name}`:
 
@@ -153,7 +155,7 @@ Your response:
 **First 5 rows:**
 {df.head().to_string()}
 """
-        return context
+        return context, df_name
 
     def generate_code(self, prompt: str, return_code: bool = False) -> dict:
         """
@@ -162,7 +164,7 @@ Your response:
         self.log(f"--- Code Generation Prompt (User Input) ---\n{prompt}\n---")
 
         # Get context from Milvus
-        dataframe_context = self._get_dataframe_context(prompt)
+        dataframe_context, df_name = self._get_dataframe_context(prompt)
         examples = milvus_service.search_examples(prompt)
         history = milvus_service.search_conversation_history(prompt)
 
@@ -181,7 +183,7 @@ Relevant Conversation History:
         prompt_template = f"""You are "DataWrangler", a friendly and helpful AI assistant that helps users analyze data with pandas. You are an expert in pandas and you always generate correct and efficient code.
 
 You have access to the following tools:
-- `dataframe_service`: An object to manage dataframes. Use `dataframe_service.get_dataframe("df_name")` to get a dataframe.
+- `df`: The pandas DataFrame that you need to analyze. It has been pre-loaded for you.
 - `results_history`: A list of the results of the last 10 commands. `results_history[-1]` is the most recent result.
 - `last_result`: A convenient alias for `results_history[-1]`.
 - `plots_dir`: The absolute path to the directory where plots should be saved.
@@ -192,7 +194,7 @@ Your task is to generate a single block of Python code to answer the user's prom
 **Golden Rules:**
 1.  **Always be helpful and friendly.**
 2.  **Always generate correct and efficient pandas code.**
-3.  **Always use the tools provided.**
+3.  **Always use the `df` variable to refer to the dataframe.** Do not use `dataframe_service`.
 4.  **Self-Contained Code:** For any new analysis, you MUST generate a self-contained block of code. Do NOT rely on `last_result` unless the user's prompt explicitly refers to the previous result (e.g., "from these results...", "with this data...").
 5.  **NEVER generate code that is not related to data analysis with pandas.**
 6.  **NEVER use `print()` statements.**
@@ -269,12 +271,12 @@ Your task is to generate a single block of Python code to answer the user's prom
 
 *   **Using Previous Results:** If the user's prompt refers to a previous result (e.g., "from these numbers"), you MUST use the `results_history` list.
     *   **Example:**
-        *   User: "show me the top 5 rows from df_my_data based on the 'score' column"
-        *   You generate: `result = dataframe_service.get_dataframe("df_my_data").nlargest(5, 'score')`
+        *   User: "show me the top 5 rows from the dataframe based on the 'score' column"
+        *   You generate: `result = df.nlargest(5, 'score')`
         *   User: "from these, show me the ones with a score greater than 50"
         *   You generate: `result = last_result[last_result['score'] > 50]`
         *   User: "now show me the top 10 from the original dataframe"
-        *   You generate: `result = dataframe_service.get_dataframe("df_my_data").nlargest(10, 'score')`
+        *   You generate: `result = df.nlargest(10, 'score')`
         *   User: "from the first result, show me the ones with a score less than 30"
         *   You generate: `result = results_history[-3][results_history[-3]['score'] < 30]`
 
@@ -333,9 +335,9 @@ Now, let's get to work! The user is waiting for your amazing code.
             code = code.replace(
                 "dataframe_service.get_all_dataframes().keys()", "list(dataframe_service.get_all_dataframes().keys())"
             )
-            return {"code": code, "formatted_code": f"```python{code}```", "message": ""}
+            return {"code": code, "formatted_code": f"```python{code}```", "message": "", "df_name": df_name}
         else:
-            return {"code": "", "formatted_code": f"```{raw_code}```", "message": raw_code}
+            return {"code": "", "formatted_code": f"```{raw_code}```", "message": raw_code, "df_name": df_name}
 
     def health(self):
         # For now, we'll just check if the OpenAI API key is set
