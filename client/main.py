@@ -10,6 +10,12 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
 from rich.console import Console
+from rich.markdown import Markdown
+from rich.syntax import Syntax
+import pyperclip
+
+# Global variable to store the last generated code
+last_generated_code = ""
 
 # Configure logging
 log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "client.log")
@@ -78,6 +84,19 @@ def _(event):
     buf.cursor_position += buf.document.get_end_of_line_position()
 
 
+@kb.add("c-y") # Ctrl+Y for copying code
+def _(event):
+    global last_generated_code
+    if last_generated_code:
+        try:
+            pyperclip.copy(last_generated_code)
+            console.print("[green]Generated code copied to clipboard.[/green]")
+        except pyperclip.PyperclipException as e:
+            console.print(f"[red]Error copying to clipboard: {e}[/red]")
+    else:
+        console.print("[yellow]No code to copy yet.[/yellow]")
+
+
 # Initialize PromptSession with file history and custom key bindings
 history_file = os.path.join(os.path.expanduser("~/"), ".df_wrangler_history")
 session = PromptSession(history=FileHistory(history_file), key_bindings=kb)
@@ -90,6 +109,10 @@ def display_help():
 [bold yellow]General Commands:[/bold yellow]
   - [green]exit[/green], [green]bye[/green], [green]stop[/green], [green]quit[/green]: Exit the application.
   - [green]help[/green]: Display this help message.
+
+[bold yellow]Code Interaction:[/bold yellow]
+  - Generated Python code is now displayed with syntax highlighting for better readability.
+  - Press [green]Ctrl+Y[/green] to copy the last generated code to your clipboard.
 
 [bold yellow]Dataframe Operations (Natural Language):[/bold yellow]
   - [green]Upload the file located at /path/to/your/data.csv[/green]
@@ -118,6 +141,7 @@ while True:
             break
         elif user_input.lower() == "help":
             display_help()
+            continue
 
         response = requests.post("http://127.0.0.1:8000/command", json={"prompt": user_input})
         response.raise_for_status()
@@ -133,13 +157,16 @@ while True:
                     console.print(upload_response.json()["message"])
             else:
                 console.print(f"[red]Error: File not found or path not provided by server: {file_path}[/red]")
-        elif "plot_url" in server_response and "code" in server_response:
+        elif "plot_url" in server_response and "formatted_code" in server_response:
             plot_url = server_response.get("plot_url")
-            code_content = server_response.get("code")
+            code_content = server_response.get("code") # Get raw code
+            formatted_code_content = server_response.get("formatted_code")
+            last_generated_code = code_content # Store raw code
             console.print("[green]Your plot is ready. Please open this URL in your browser:[/green]")
             console.print(f"[bold blue]{plot_url}[/bold blue]")
-            console.print("[yellow]Generated Code:[/yellow]")
-            console.print(code_content)
+            console.print("\n[yellow]Generated Code: (Press Ctrl+Y to copy code)[/yellow]")
+            syntax = Syntax(code_content, "python", theme="monokai", line_numbers=True)
+            console.print(syntax)
         elif "plot_url" in server_response:
             # TODO: remove duplicate block
             plot_url = server_response.get("plot_url")
@@ -154,16 +181,32 @@ while True:
         elif "message" in server_response:
             console.print(f"[blue]{server_response['message']}[/blue]")
         elif "result" in server_response:
-            if "code" in server_response:
-                console.print("[yellow]Generated Code:[/yellow]")
+            if "formatted_code" in server_response:
+                code_content = server_response.get("code") # Get raw code
+                formatted_code_content = server_response.get("formatted_code")
+                last_generated_code = code_content # Store raw code
+                console.print("\n[yellow]Generated Code: (Press Ctrl+Y to copy code)[/yellow]")
+                syntax = Syntax(code_content, "python", theme="monokai", line_numbers=True)
+                console.print(syntax)
+            elif "code" in server_response: # Fallback if formatted_code is not present
+                code_content = server_response.get("code") # Get raw code
+                last_generated_code = code_content # Store raw code
+                console.print("\n[yellow]Generated Code:[/yellow]")
                 console.print(server_response["code"])
+            console.print(f"\n[cyan]Result:[/cyan]") # Added a header for result
             console.print(f"[cyan]{server_response['result']}[/cyan]")
         else:
             console.print(f"[yellow]Unexpected server response: {server_response}[/yellow]")
 
+    except KeyboardInterrupt:
+        console.print("[yellow]Operation cancelled by user (Ctrl+C). Please try again.[/yellow]")
+        continue
     except requests.exceptions.ConnectionError:
         console.print("[red]Error: Could not connect to the server. Is it running?[/red]")
+        continue
     except requests.exceptions.RequestException as e:
         console.print(f"[red]An error occurred: {e}[/red]")
+        continue
     except Exception as e:
         console.print(f"[red]An unexpected error occurred: {e}[/red]")
+        continue

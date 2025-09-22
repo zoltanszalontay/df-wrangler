@@ -12,6 +12,8 @@ The application leverages OpenAI with the `gpt-4o-mini` model to interpret user 
 -   **Persistent & Versioned Storage**: DataFrame states are automatically saved after each operation. You can "pop" back to a previous state, providing a version history.
 -   **Extensible & Scalable**: Built with FastAPI and designed to be easily scalable, with considerations for deployment via Ray Serve.
 -   **Server-side Prompt Logging**: User prompts sent to the LLM are now logged on the server for debugging and monitoring purposes.
+-   **Enhanced Code Display**: Generated Python code is now presented with syntax highlighting and clear separation from results, improving readability.
+-   **Code Copying**: Easily copy the last generated Python code to your clipboard using `Ctrl+Y` (or `Command+Y` on macOS terminals that support it).
 -   **Tested**: Includes unit tests (unittest) and property-based tests (Hypothesis).
 
 ## Project Structure
@@ -168,3 +170,8 @@ Interact with the application by typing commands at the `df-wrangler>` prompt. T
 
 13. `Undo the previous operation`
     *   *Result: The rename of `df_te` is undone. The dataframe is now named `df_dashboard_te` again.*
+
+### Code Interaction
+
+-   **Syntax Highlighting**: All generated Python code is now displayed with rich syntax highlighting and line numbers, making it easier to read and understand.
+-   **Copy to Clipboard**: After code is generated, you can press `Ctrl+Y` (Control + Y) to copy the raw Python code to your system's clipboard. This is useful for debugging, saving snippets, or running the code elsewhere.

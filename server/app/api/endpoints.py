@@ -130,12 +130,12 @@ def handle_command(payload: dict = Body(...)):
             milvus_service.add_conversation_turn(analysis_prompt, llm_response["code"], str(result))
             # Check if the result is a dictionary containing a plot_url
             if isinstance(result, dict) and "plot_url" in result:
-                return {"plot_url": result["plot_url"], "code": llm_response["code"]}
+                return {"plot_url": result["plot_url"], "code": llm_response["code"], "formatted_code": llm_response["formatted_code"]}
             else:
-                return {"result": str(result), "code": llm_response["code"]}
+                return {"result": str(result), "code": llm_response["code"], "formatted_code": llm_response["formatted_code"]}
         else:
             milvus_service.add_conversation_turn(analysis_prompt, "", llm_response["message"])
-            return {"message": llm_response["message"]}
+            return {"message": llm_response["message"], "formatted_code": llm_response["formatted_code"]}
 
     else:
         return {"error": "Unknown command"}, 400

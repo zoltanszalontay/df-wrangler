@@ -333,9 +333,9 @@ Now, let's get to work! The user is waiting for your amazing code.
             code = code.replace(
                 "dataframe_service.get_all_dataframes().keys()", "list(dataframe_service.get_all_dataframes().keys())"
             )
-            return {"code": code, "message": ""}
+            return {"code": code, "formatted_code": f"```python{code}```", "message": ""}
         else:
-            return {"code": "", "message": raw_code}
+            return {"code": "", "formatted_code": f"```{raw_code}```", "message": raw_code}
 
     def health(self):
         # For now, we'll just check if the OpenAI API key is set
