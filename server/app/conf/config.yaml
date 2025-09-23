@@ -1,6 +1,7 @@
 llm:
   model: gpt-4o-mini
   # model: gpt-4o
+  token_limit: 4096
 logging:
   client:
     level: 'on'

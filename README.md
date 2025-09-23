@@ -1,6 +1,6 @@
 # df-wrangler
 
-`df-wrangler` is a CLI chatbot application designed for interactive data analysis. It uses a FastAPI backend and a command-line client to allow users to upload CSV files, manipulate them as pandas DataFrames using natural language prompts, and receive results directly in the terminal.
+`df-wrangler` is a vibe coded CLI chatbot application designed for interactive data analysis. It uses a FastAPI backend and a command-line client to allow users to upload CSV files, manipulate them as pandas DataFrames using natural language prompts, and receive results directly in the terminal.
 
 The application leverages OpenAI with the `gpt-4o-mini` model to interpret user commands and generate executable Python/pandas code. The code generation has been made more robust to handle general queries and common LLM output variations.
 
