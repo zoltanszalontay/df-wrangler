@@ -4,8 +4,15 @@ from .logging_service import logging_service
 from datetime import datetime
 
 
+import os
+
 class MilvusService:
-    def __init__(self, db_path="server/database/milvus_app.db"):
+    def __init__(self, db_path_relative_to_project_root="server/database/milvus_app.db"):
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        app_dir = os.path.dirname(current_file_dir)
+        server_dir = os.path.dirname(app_dir)
+        project_root = os.path.dirname(server_dir)
+        db_path = os.path.join(project_root, db_path_relative_to_project_root)
         self.client = MilvusClient(db_path)
         self.model = SentenceTransformer("all-MiniLM-L6-v2")  # A good default model
         self.vector_dim = 384  # Dimension of the embeddings from all-MiniLM-L6-v2

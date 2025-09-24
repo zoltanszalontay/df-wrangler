@@ -1,10 +1,12 @@
+code_execution:
+  cpu_limit: 5
+  mem_limit: 1000000000
+  timeout: 30
 llm:
-  model: gpt-4o-mini
-  # model: gpt-4o
-  token_limit: 4096
+  model: gpt-4o
 logging:
   client:
-    level: 'on'
+    level: 'off'
   code_execution:
     level: 'on'
     log_file: server/logs/code_execution.log
@@ -23,6 +25,8 @@ logging:
   storage:
     level: 'on'
     log_file: server/logs/storage.log
+  vectordb:
+    level: 'off'
 services:
 - llm
 - dataframe
@@ -30,7 +34,6 @@ services:
 - code_execution
 - session
 - storage
-code_execution:
-  cpu_limit: 5
-  mem_limit: 1000000000
-  timeout: 30
+vector_store:
+  provider: milvus
+  token_limit: 4096

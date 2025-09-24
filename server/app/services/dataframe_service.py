@@ -1,6 +1,5 @@
 import pandas as pd
 from .storage_service import storage_service
-from .milvus_service import milvus_service
 from .logging_service import logging_service
 from datetime import datetime
 
@@ -8,7 +7,11 @@ from datetime import datetime
 class DataFrameService:
     def __init__(self):
         self.dataframes = {}
+        self.vector_store = None
         self.load_from_storage()
+
+    def set_vector_store(self, vector_store):
+        self.vector_store = vector_store
 
     def log(self, message):
         if logging_service.get_logging_level("dataframe") == "on":
@@ -44,7 +47,7 @@ Columns and Data Types:
 
 First 5 rows:
 {df.head().to_string()}"""
-        milvus_service.add_dataframe_schema(name, schema_text)
+        self.vector_store.add_dataframe_schema(name, schema_text)
 
     def set_dataframe(self, name: str, df: pd.DataFrame):
         self.dataframes[name] = df
@@ -55,7 +58,7 @@ Columns and Data Types:
 
 First 5 rows:
 {df.head().to_string()}"""
-        milvus_service.add_dataframe_schema(name, schema_text)
+        self.vector_store.add_dataframe_schema(name, schema_text)
 
     def get_dataframe(self, name: str) -> pd.DataFrame:
         return self.dataframes.get(name)

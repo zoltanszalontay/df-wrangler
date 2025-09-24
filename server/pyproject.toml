@@ -43,5 +43,12 @@ dependencies = [
     "torch==2.8.0",
     "transformers==4.56.2",
     "ujson==5.11.0",
-    "urllib3==2.5.0"
+    "urllib3==2.5.0",
+    "qdrant-client"
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest",
+    "hypothesis"
 ]

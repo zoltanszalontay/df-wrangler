@@ -12,7 +12,8 @@
         "server.app.main:app",
         "--host", "127.0.0.1",
         "--port", "8000",
-        "--reload"
+        "--reload",
+        "--log-config", "server/app/conf/logging.yaml"
       ],
       "subProcess": true,                // follow the reloader child process so breakpoints bind
       "justMyCode": true,
@@ -35,7 +36,8 @@
       "args": [
         "server.app.main:app",
         "--host", "127.0.0.1",
-        "--port", "8000"
+        "--port", "8000",
+        "--log-config", "server/app/conf/logging.yaml"
       ],
       "justMyCode": true,
       "cwd": "${workspaceFolder}",

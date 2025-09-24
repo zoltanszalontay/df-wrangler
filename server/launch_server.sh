@@ -7,4 +7,4 @@ source .venv/bin/activate
 export TOKENIZERS_PARALLELISM=false
 
 echo "Launching server..."
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --log-config app/conf/logging.yaml

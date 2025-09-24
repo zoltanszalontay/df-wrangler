@@ -13,6 +13,12 @@ def create_fastapi_app() -> FastAPI:
     with hydra.initialize(config_path="conf", version_base=None):
         cfg = hydra.compose(config_name="config")
 
+    from .services.vector_store_factory import get_vector_store
+    vector_store = get_vector_store(cfg)
+
+    from .services.dataframe_service import dataframe_service
+    dataframe_service.set_vector_store(vector_store)
+
     # Pass the loaded config to services that need it
     from .services.llm_service import LLMService
     llm_service_instance = LLMService(config=cfg)

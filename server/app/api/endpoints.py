@@ -118,6 +118,9 @@ def handle_command(payload: dict = Body(...)):
         else:
             return {"error": f"Unknown service: {service_name}"}
 
+    elif command == "client_command":
+        return classified_command
+
     elif command == "analyze":
         if not session_service.active:
             return {"error": "No dataframes loaded. Please upload a dataframe first."}
@@ -183,3 +186,11 @@ def remove_dataframe(df_name: str):
         return {"message": f"DataFrame '{df_name}' removed successfully."}
     else:
         return {"error": f"DataFrame '{df_name}' not found."}
+
+
+@router.get("/health")
+def health_check():
+    """
+    Health check endpoint.
+    """
+    return {"status": "ok"}

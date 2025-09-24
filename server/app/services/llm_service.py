@@ -4,13 +4,14 @@ import json
 import re
 from datetime import datetime
 from .dataframe_service import dataframe_service
-from .milvus_service import milvus_service
+from .vector_store_factory import get_vector_store
 from .logging_service import logging_service
 
 
 class LLMService:
     def __init__(self, config):
         self.config = config
+        self.vector_store = get_vector_store(config)
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise ValueError("OPENAI_API_KEY environment variable not set.")
@@ -29,77 +30,41 @@ class LLMService:
     def _get_classification_prompt(self, user_prompt: str) -> str:
         prompt_template = """You are a command interpreter for a data analysis chatbot.
 Your task is to analyze the user's prompt and classify it into one of the following commands and extract its arguments.
-You must respond in JSON format ONLY, with no additional text or explanations, and no markdown.
+
+Your response must be in JSON format ONLY.
 
 The available commands are:
-- 'upload': For loading a CSV file. This command is used when the user explicitly mentions a file path or a file name to be loaded.
-- 'rename': For renaming a dataframe. Requires 'old_name' and 'new_name'.
-- 'pop': For reverting to the previous state. Requires no arguments.
-- 'remove': For removing a dataframe. Requires 'df_name'.
-- 'download': For downloading a dataframe to a CSV file. Requires 'df_name' and an optional 'filename'.
-- 'list_dataframes': For listing all currently loaded dataframes. Requires no arguments.
-- 'analyze': For any other data analysis task that involves querying or manipulating loaded dataframes. The original prompt is passed through.
-- 'set_logging': For turning logging on or off for a specific service or all services. Requires 'service_name' (e.g., "llm", "dataframe", "all") and 'level' (e.g., "on", "off").
-- 'list_services': For listing all available services.
-- 'service_health': For getting the health of a specific service or all services.
+- 'upload': For loading a CSV file.
+- 'rename': For renaming a dataframe.
+- 'pop': For reverting to the previous state.
+- 'remove': For removing a dataframe.
+- 'download': For downloading a dataframe.
+- 'list_dataframes': For listing all currently loaded dataframes.
+- 'analyze': For any other data analysis task.
+- 'set_logging': For controlling server-side logging. Requires 'service_name' ("all" or a specific service) and 'level' ("on" or "off").
+- 'client_command': For controlling the client application. Requires 'action' ("enable_logging" or "disable_logging").
 
-Here are some examples:
+Here are some general guidelines:
+- Analyze the user's prompt to determine the intent.
+- If the prompt is about controlling the client application (e.g., "client-side logging"), use the 'client_command'.
+- If the prompt is about controlling the server's logging, use the 'set_logging' command.
+- For 'set_logging', you need to determine the 'service_name' (e.g., "llm", "dataframe", "all") and the 'level' ("on" or "off").
+- The user might use various words for on/off, like "enable", "start", "log" or "disable", "stop", "don't log".
 
-User prompt: "upload data/my_file.csv"
+Examples:
+User prompt: "I don't want any more logging on the client side"
 Your response:
-{"command": "upload", "args": {"file_path": "data/my_file.csv"}}
+{"command": "client_command", "args": {"action": "disable_logging"}}
 
-User prompt: "show the list of uploaded files"
-Your response:
-{"command": "list_dataframes", "args": {}}
-
-User prompt: "rename df_old to df_new"
-Your response:
-{"command": "rename", "args": {"old_name": "df_old", "new_name": "df_new"}}
-
-User prompt: "pop"
-Your response:
-{"command": "pop", "args": {}}
-
-User prompt: "remove the dataframe named 'old_data'"
-Your response:
-{"command": "remove", "args": {"df_name": "old_data"}}
-
-User prompt: "Show me the first 5 rows of df_my_data"
-Your response:
-{"command": "analyze", "args": {"prompt": "Show me the first 5 rows of df_my_data"}}
-
-User prompt: "download my_df as report.csv"
-Your response:
-{"command": "download", "args": {"df_name": "my_df", "filename": "report.csv"}}
-
-User prompt: "download my_df"
-Your response:
-{"command": "download", "args": {"df_name": "my_df", "filename": "my_df.csv"}}
-
-User prompt: "turn on logging for the llm service"
-Your response:
-{"command": "set_logging", "args": {"service_name": "llm", "level": "on"}}
-
-User prompt: "turn off logging for all services"
+User prompt: "turn all server logs off"
 Your response:
 {"command": "set_logging", "args": {"service_name": "all", "level": "off"}}
 
-User prompt: "list all services"
+User prompt: "don't log the llm service anymore"
 Your response:
-{"command": "list_services", "args": {}}
-
-User prompt: "what is the health of the dataframe service?"
-Your response:
-{"command": "service_health", "args": {"service_name": "dataframe"}}
-
-User prompt: "show me the health of all services"
-Your response:
-{"command": "service_health", "args": {"service_name": "all"}}
+{"command": "set_logging", "args": {"service_name": "llm", "level": "off"}}
 """
-        return f"""{prompt_template}{user_prompt}
-Your response:
-"""
+        return f"""{prompt_template}\n\nUser prompt: {user_prompt}\nYour response:\n"""
 
     def classify_and_extract_command(self, prompt: str) -> dict:
         """
@@ -113,7 +78,12 @@ Your response:
         )
 
         try:
-            return json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content.strip()
+            if content.startswith("```json") and content.endswith("```"):
+                content = content[len("```json"): -len("```")].strip()
+            elif content.startswith("```") and content.endswith("```"):
+                content = content[len("```"): -len("```")].strip()
+            return json.loads(content)
         except (json.JSONDecodeError, KeyError, IndexError):
             return {"command": "analyze", "args": {"prompt": prompt}}
 
@@ -126,7 +96,7 @@ Your response:
             return "", None
 
         # Search for the most relevant dataframe schema
-        search_results = milvus_service.search_dataframe_schemas(prompt)
+        search_results = self.vector_store.search_dataframe_schemas(prompt)
         if search_results:
             # Extract df_name from schema_text
             match = re.search(r"DataFrame: (\w+)", search_results[0]["schema_text"])
@@ -165,8 +135,8 @@ Your response:
 
         # Get context from Milvus
         dataframe_context, df_name = self._get_dataframe_context(prompt)
-        examples = milvus_service.search_examples(prompt)
-        history = milvus_service.search_conversation_history(prompt)
+        examples = self.vector_store.search_examples(prompt)
+        history = self.vector_store.search_conversation_history(prompt)
 
         examples_context = ""
         if examples:
@@ -310,7 +280,7 @@ Your task is to generate a single block of Python code to answer the user's prom
 Now, let's get to work! The user is waiting for your amazing code.
 """
 
-        system_prompt = f"{prompt_template}\n\n{dataframe_context}{examples_context}{history_context}\n\n"
+        system_prompt = f"""{prompt_template}\n\n{dataframe_context}{examples_context}{history_context}\n\n"""
 
         response = self.client.chat.completions.create(
             model=self.model,

@@ -5,6 +5,7 @@ version = "0.1.0"
 dependencies = [
     "rich",
     "requests",
-    "prompt_toolkit",
-    "pyperclip"
+    "prompt_toolkit>=3.0",
+    "pyperclip",
+    "httpx"
 ]
